@@ -2,12 +2,12 @@
   "name": "react-form-hook",
   "version": "1.0.0",
   "description": "React forms hook",
-  "main": "dist/index.js",
+  "main": "lib/index.js",
   "files": [
-    "dist/"
+    "lib/"
   ],
-  "types": "dist/index.d.ts",
-  "typings": "dist/index.d.ts",
+  "types": "lib/index.d.ts",
+  "typings": "lib/index.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
