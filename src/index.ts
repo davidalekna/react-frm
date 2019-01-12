@@ -1,7 +1,27 @@
 import * as React from 'react';
 import cloneDeep from 'lodash.clonedeep';
 
-const errorPusher = field => {
+export interface Field {
+  name: string;
+  errors?: Array<string>;
+  label?: string;
+  value: string;
+  placeholder?: string;
+  type: string;
+  requirements?: Array<Function>;
+  component?: Function;
+}
+
+export interface State extends Array<Field> {}
+
+export interface Action {
+  type: string;
+  payload?: Field | any;
+}
+
+export type InputEvent = React.ChangeEvent<HTMLInputElement>;
+
+const errorPusher = (field: Field) => {
   if (field.requirements) {
     field.errors = [];
     for (const fn of field.requirements) {
@@ -14,9 +34,9 @@ const errorPusher = field => {
   return field;
 };
 
-const defaultFieldValidation = (state, updateState) => {
+const defaultFieldValidation = (state: State, dispatch: Function) => {
   const validatedState = [...state].map(errorPusher);
-  updateState({ type: 'pushErrors', payload: validatedState });
+  dispatch({ type: 'pushErrors', payload: validatedState });
   // if any errors return undefined, otherwise state
   if (
     validatedState
@@ -31,34 +51,39 @@ const defaultFieldValidation = (state, updateState) => {
   }
 };
 
-export default function useFormFields(
-  initialValues = [],
-  validate = defaultFieldValidation,
-) {
-  const [state, dispatch] = React.useReducer((state, action) => {
-    switch (action.type) {
-      case 'fieldUpdate': {
-        let itemIndex;
-        const item = state.find(({ name }, index) => {
-          itemIndex = index;
-          return name === action.payload.name;
-        });
-        state[itemIndex] = Object.assign(item, action.payload);
-        return cloneDeep(state);
-      }
-      case 'pushErrors': {
-        return cloneDeep(action.payload);
-      }
-      case 'resetFields': {
-        return cloneDeep(initialValues);
-      }
-      default: {
-        return state;
-      }
+const reducer = (initialState: State) => (state: State, action: Action) => {
+  switch (action.type) {
+    case 'fieldUpdate': {
+      let itemIndex: number = 0;
+      const item = state.find(({ name }, index) => {
+        itemIndex = index;
+        return name === action.payload.name;
+      });
+      state[itemIndex] = Object.assign(item, action.payload);
+      return cloneDeep(state);
     }
-  }, cloneDeep(initialValues));
+    case 'pushErrors': {
+      return cloneDeep(action.payload);
+    }
+    case 'resetFields': {
+      return cloneDeep(initialState);
+    }
+    default: {
+      return state;
+    }
+  }
+};
 
-  const handleChange = ({ target }) => {
+export default function useFormFields(
+  initialState: State = [],
+  validate: Function = defaultFieldValidation,
+) {
+  const [state, dispatch] = React.useReducer(
+    reducer(initialState),
+    cloneDeep(initialState),
+  );
+
+  const handleChange = ({ target }: InputEvent): void => {
     if (!target.name) throw Error('no input name');
     dispatch({
       type: 'fieldUpdate',
@@ -69,9 +94,9 @@ export default function useFormFields(
     });
   };
 
-  const validateOnBlur = ({ target }) => {
+  const validateOnBlur = ({ target }: InputEvent): void => {
     if (!target.name) throw Error('no input name');
-    const item = state.find(item => item.name === target.name);
+    const item: Field = state.find(item => item.name === target.name);
     const updatedItem = errorPusher(item);
     dispatch({ type: 'fieldUpdate', payload: updatedItem });
   };
