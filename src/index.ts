@@ -1,6 +1,10 @@
 import * as React from 'react';
 import cloneDeep from 'lodash.clonedeep';
 
+export interface Requirement {
+  ([any]: any): string | undefined | null;
+}
+
 export interface Field {
   name: string;
   errors?: Array<string>;
@@ -8,7 +12,7 @@ export interface Field {
   value: string;
   placeholder?: string;
   type: string;
-  requirements?: Array<Function>;
+  requirements?: Array<Requirement>;
   component?: Function;
 }
 
@@ -35,25 +39,20 @@ const errorPusher = (field: Field) => {
 };
 
 const defaultFieldValidation = (state: State, dispatch: Function) => {
-  const validatedState = [...state].map(errorPusher);
-  dispatch({ type: 'pushErrors', payload: validatedState });
-  // if any errors return undefined, otherwise state
-  if (
-    validatedState
-      .map(field => field.errors)
-      .flat()
-      .filter(Boolean).length > 0
-  ) {
+  const stateWithErrors = [...state].map(errorPusher);
+  dispatch({ type: '@@errors', payload: stateWithErrors });
+  const errors: any = stateWithErrors.map(field => field.errors || []);
+  if (errors.flat().filter(Boolean).length > 0) {
     alert('fix your errors please!');
     return undefined;
   } else {
-    return validatedState;
+    return stateWithErrors;
   }
 };
 
 const reducer = (initialState: State) => (state: State, action: Action) => {
   switch (action.type) {
-    case 'fieldUpdate': {
+    case '@@fieldUpdate': {
       let itemIndex: number = 0;
       const item = state.find(({ name }, index) => {
         itemIndex = index;
@@ -62,10 +61,10 @@ const reducer = (initialState: State) => (state: State, action: Action) => {
       state[itemIndex] = Object.assign(item, action.payload);
       return cloneDeep(state);
     }
-    case 'pushErrors': {
+    case '@@errors': {
       return cloneDeep(action.payload);
     }
-    case 'resetFields': {
+    case '@@reset': {
       return cloneDeep(initialState);
     }
     default: {
@@ -83,10 +82,10 @@ export default function useFormFields(
     cloneDeep(initialState),
   );
 
-  const handleChange = ({ target }: InputEvent): void => {
+  const handleChange = ({ target }: InputEvent) => {
     if (!target.name) throw Error('no input name');
     dispatch({
-      type: 'fieldUpdate',
+      type: '@@fieldUpdate',
       payload: {
         name: target.name,
         value: target.type === 'checkbox' ? target.checked : target.value,
@@ -94,18 +93,18 @@ export default function useFormFields(
     });
   };
 
-  const validateOnBlur = ({ target }: InputEvent): void => {
+  const validateOnBlur = ({ target }: InputEvent) => {
     if (!target.name) throw Error('no input name');
-    const item: Field = state.find(item => item.name === target.name);
+    const item: any = state.find(item => item.name === target.name);
     const updatedItem = errorPusher(item);
-    dispatch({ type: 'fieldUpdate', payload: updatedItem });
+    dispatch({ type: '@@fieldUpdate', payload: updatedItem });
   };
 
   const clearValues = () => {
-    dispatch({ type: 'resetFields' });
+    dispatch({ type: '@@reset' });
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = (): State | void => {
     return validate(state, dispatch);
   };
 
