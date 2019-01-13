@@ -1,5 +1,5 @@
 import * as React from 'react';
-import cloneDeep from 'lodash.clonedeep';
+import { cloneDeep } from 'lodash';
 
 export interface Requirement {
   ([any]: any): string | undefined | null;
