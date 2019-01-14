@@ -2,12 +2,12 @@ import * as React from 'react';
 import { cloneDeep } from 'lodash';
 
 export interface Requirement {
-  ([any]: any): string | undefined | null;
+  ([any]: any): string | void | null;
 }
 
 export interface Field {
   name?: string;
-  value?: string;
+  value?: any;
   type?: string;
   errors?: Array<string>;
   label?: string;
@@ -16,7 +16,7 @@ export interface Field {
   component?: Function;
 }
 
-export interface State extends Array<Field> {}
+export type State = Array<Field>;
 
 export interface Action {
   type: string;
@@ -38,13 +38,16 @@ const errorPusher = (field: Field) => {
   return field;
 };
 
-const defaultFieldValidation = (state: State, dispatch: Function) => {
+const defaultFieldValidation = (
+  state: State,
+  dispatch: Function,
+): State | void => {
   const stateWithErrors = [...state].map(errorPusher);
   dispatch({ type: '@@errors', payload: stateWithErrors });
   const errors: any = stateWithErrors.map(field => field.errors || []);
   if (errors.flat().filter(Boolean).length > 0) {
     alert('fix your errors please!');
-    return undefined;
+    return;
   } else {
     return stateWithErrors;
   }
@@ -63,7 +66,10 @@ const findByName = (state: State, itemName: string) => {
   };
 };
 
-const reducer = (initialState: State) => (state: State, action: Action) => {
+const reducer = (initialState: State) => (
+  state: State,
+  action: Action,
+): State => {
   switch (action.type) {
     case '@@fieldUpdate': {
       const { item, index } = findByName(state, action.payload.name);
@@ -117,7 +123,7 @@ export default function useFormFields(
     dispatch({ type: '@@reset' });
   };
 
-  const handleSubmit = (): State | void => {
+  const handleSubmit = () => {
     return validate(state, dispatch);
   };
 
