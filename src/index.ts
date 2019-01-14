@@ -6,12 +6,12 @@ export interface Requirement {
 }
 
 export interface Field {
-  name: string;
+  name?: string;
+  value?: string;
+  type?: string;
   errors?: Array<string>;
   label?: string;
-  value: string;
   placeholder?: string;
-  type: string;
   requirements?: Array<Requirement>;
   component?: Function;
 }
@@ -50,15 +50,30 @@ const defaultFieldValidation = (state: State, dispatch: Function) => {
   }
 };
 
+const findByName = (state: State, itemName: string) => {
+  let itemIndex: number = 0;
+  const item = state.find(({ name }, index) => {
+    itemIndex = index;
+    return name === itemName;
+  });
+
+  return {
+    item,
+    index: itemIndex,
+  };
+};
+
 const reducer = (initialState: State) => (state: State, action: Action) => {
   switch (action.type) {
     case '@@fieldUpdate': {
-      let itemIndex: number = 0;
-      const item = state.find(({ name }, index) => {
-        itemIndex = index;
-        return name === action.payload.name;
-      });
-      state[itemIndex] = Object.assign(item, action.payload);
+      const { item, index } = findByName(state, action.payload.name);
+      state[index] = Object.assign(item, action.payload);
+      return cloneDeep(state);
+    }
+    case '@@fieldError': {
+      const { item, index } = findByName(state, action.payload);
+      const updatedItem = errorPusher({ ...item });
+      state[index] = Object.assign(item, updatedItem);
       return cloneDeep(state);
     }
     case '@@errors': {
@@ -95,9 +110,7 @@ export default function useFormFields(
 
   const validateOnBlur = ({ target }: InputEvent) => {
     if (!target.name) throw Error('no input name');
-    const item: any = state.find(item => item.name === target.name);
-    const updatedItem = errorPusher({ ...item });
-    dispatch({ type: '@@fieldUpdate', payload: updatedItem });
+    dispatch({ type: '@@fieldError', payload: target.name });
   };
 
   const clearValues = () => {
