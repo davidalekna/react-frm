@@ -6,9 +6,9 @@ export interface Requirement {
 }
 
 export interface Field {
-  name?: string;
-  value?: any;
-  type?: string;
+  name: string;
+  value: any;
+  type: string;
   errors?: Array<string>;
   label?: string;
   placeholder?: string;
@@ -55,7 +55,7 @@ const defaultFieldValidation = (
 
 const findByName = (state: State, itemName: string) => {
   let itemIndex: number = 0;
-  const item = state.find(({ name }, index) => {
+  const item: Field = state.find(({ name }, index) => {
     itemIndex = index;
     return name === itemName;
   });
