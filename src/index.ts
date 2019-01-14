@@ -96,7 +96,7 @@ export default function useFormFields(
   const validateOnBlur = ({ target }: InputEvent) => {
     if (!target.name) throw Error('no input name');
     const item: any = state.find(item => item.name === target.name);
-    const updatedItem = errorPusher(item);
+    const updatedItem = errorPusher({ ...item });
     dispatch({ type: '@@fieldUpdate', payload: updatedItem });
   };
 
