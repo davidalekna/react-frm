@@ -14,6 +14,7 @@ export interface Field {
   placeholder?: string;
   requirements?: Array<Requirement>;
   component?: Function;
+  [key: string]: any;
 }
 
 export type State = Array<Field>;
@@ -44,8 +45,9 @@ const defaultFieldValidation = (
 ): State | void => {
   const stateWithErrors = [...state].map(errorPusher);
   dispatch({ type: '@@errors', payload: stateWithErrors });
-  const errors: any = stateWithErrors.map(field => field.errors || []);
-  if (errors.flat().filter(Boolean).length > 0) {
+  const errors = stateWithErrors.map(field => field.errors || []);
+  // .flat() doesnt work for typescript...
+  if (errors.concat.apply([], errors).filter(Boolean).length > 0) {
     alert('fix your errors please!');
     return;
   } else {
@@ -55,11 +57,13 @@ const defaultFieldValidation = (
 
 const findByName = (state: State, itemName: string) => {
   let itemIndex: number = 0;
-  const item: Field = state.find(({ name }, index) => {
+  const item = state.find(({ name }, index) => {
     itemIndex = index;
     return name === itemName;
   });
-
+  if (!item) {
+    throw Error(`input name ${itemName} doesnt exist on provided fields`);
+  }
   return {
     item,
     index: itemIndex,
