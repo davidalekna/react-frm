@@ -2,21 +2,22 @@ import * as React from 'react';
 import { cloneDeep } from 'lodash';
 
 export interface Requirement {
-  ([any]: any): string | undefined | null;
+  ([any]: any): string | void | null;
 }
 
 export interface Field {
   name: string;
+  value: any;
+  type: string;
   errors?: Array<string>;
   label?: string;
-  value: string;
   placeholder?: string;
-  type: string;
   requirements?: Array<Requirement>;
   component?: Function;
+  [key: string]: any;
 }
 
-export interface State extends Array<Field> {}
+export type State = Array<Field>;
 
 export interface Action {
   type: string;
@@ -49,24 +50,45 @@ const extractFieldValueToName = (state: State): FinalValues => {
 const defaultFieldValidation = (state: State, dispatch: Function) => {
   const stateWithErrors = [...state].map(errorPusher);
   dispatch({ type: '@@errors', payload: stateWithErrors });
-  const errors: any = stateWithErrors.map(field => field.errors || []);
-  if (errors.flat().filter(Boolean).length > 0) {
+  const errors = stateWithErrors.map(field => field.errors || []);
+  // .flat() doesnt work for typescript...
+  if (errors.concat.apply([], errors).filter(Boolean).length > 0) {
     alert('fix your errors please!');
-    return undefined;
+    return;
   } else {
     return extractFieldValueToName(stateWithErrors);
   }
 };
 
-const reducer = (initialState: State) => (state: State, action: Action) => {
+const findByName = (state: State, itemName: string) => {
+  let itemIndex: number = 0;
+  const item = state.find(({ name }, index) => {
+    itemIndex = index;
+    return name === itemName;
+  });
+  if (!item) {
+    throw Error(`input name ${itemName} doesnt exist on provided fields`);
+  }
+  return {
+    item,
+    index: itemIndex,
+  };
+};
+
+const reducer = (initialState: State) => (
+  state: State,
+  action: Action,
+): State => {
   switch (action.type) {
     case '@@fieldUpdate': {
-      let itemIndex: number = 0;
-      const item = state.find(({ name }, index) => {
-        itemIndex = index;
-        return name === action.payload.name;
-      });
-      state[itemIndex] = Object.assign(item, action.payload);
+      const { item, index } = findByName(state, action.payload.name);
+      state[index] = Object.assign(item, action.payload);
+      return cloneDeep(state);
+    }
+    case '@@fieldError': {
+      const { item, index } = findByName(state, action.payload);
+      const updatedItem = errorPusher({ ...item });
+      state[index] = Object.assign(item, updatedItem);
       return cloneDeep(state);
     }
     case '@@errors': {
@@ -103,16 +125,14 @@ export default function useFormFields(
 
   const validateOnBlur = ({ target }: InputEvent) => {
     if (!target.name) throw Error('no input name');
-    const item: any = state.find(item => item.name === target.name);
-    const updatedItem = errorPusher(item);
-    dispatch({ type: '@@fieldUpdate', payload: updatedItem });
+    dispatch({ type: '@@fieldError', payload: target.name });
   };
 
   const clearValues = () => {
     dispatch({ type: '@@reset' });
   };
 
-  const handleSubmit = (): State | void => {
+  const handleSubmit = () => {
     return validate(state, dispatch);
   };
 
