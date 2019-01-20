@@ -25,6 +25,10 @@ export interface Action {
 
 export type InputEvent = React.ChangeEvent<HTMLInputElement>;
 
+export interface FinalValues {
+  [name: string]: any;
+}
+
 const errorPusher = (field: Field) => {
   if (field.requirements) {
     field.errors = [];
@@ -38,6 +42,10 @@ const errorPusher = (field: Field) => {
   return field;
 };
 
+const extractFieldValueToName = (state: State): FinalValues => {
+  return { ...state.map(({ name, value }) => ({ [name]: value })) };
+};
+
 const defaultFieldValidation = (state: State, dispatch: Function) => {
   const stateWithErrors = [...state].map(errorPusher);
   dispatch({ type: '@@errors', payload: stateWithErrors });
@@ -46,7 +54,7 @@ const defaultFieldValidation = (state: State, dispatch: Function) => {
     alert('fix your errors please!');
     return undefined;
   } else {
-    return stateWithErrors;
+    return extractFieldValueToName(stateWithErrors);
   }
 };
 
