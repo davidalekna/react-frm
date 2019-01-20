@@ -45,7 +45,9 @@ const errorPusher = (field: Field) => {
 };
 
 const extractFieldValueToName = (state: State): FinalValues => {
-  return { ...state.map(({ name, value }) => ({ [name]: value })) };
+  return state
+    .map(({ name, value }) => ({ [name]: value }))
+    .reduce((acc, val) => Object.assign(acc, val), {});
 };
 
 const defaultFieldValidation = (state: State, dispatch: Function) => {
