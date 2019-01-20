@@ -12,12 +12,13 @@ export interface Field {
   errors?: Array<string>;
   label?: string;
   placeholder?: string;
-  requirements?: Array<Requirement>;
+  requirements?: Requirement[];
   component?: Function;
   [key: string]: any;
 }
 
-export type State = Array<Field>;
+export type State = Field[];
+// export interface State extends Array<Field> {}
 
 export interface Action {
   type: string;
@@ -106,7 +107,7 @@ const reducer = (initialState: State) => (
 export default function useFormFields(
   initialState: State = [],
   validate: Function = defaultFieldValidation,
-) {
+): any {
   const [state, dispatch] = React.useReducer(
     reducer(initialState),
     cloneDeep(initialState),
@@ -136,5 +137,5 @@ export default function useFormFields(
     return validate(state, dispatch);
   };
 
-  return [state, handleChange, handleSubmit, validateOnBlur, clearValues];
+  return [state, { handleChange, handleSubmit, validateOnBlur, clearValues }];
 }

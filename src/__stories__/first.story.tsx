@@ -6,15 +6,10 @@ import initialFields from '../__mocks__/fields'
 import FieldContainer from './components/FieldContainer';
 
 const Demo = () => {
-  const [
-    fields,
-    handleChange,
-    submit,
-    validateOnBlur,
-    clearValues,
-  ] = useFormFields(initialFields);
+  const [ fields, fns ] = useFormFields(initialFields);
+  const { handleChange, handleSubmit: submit, validateOnBlur, clearValues } = fns;
 
-  const handleSubmit = (evt) => {
+  const handleSubmit = (evt: any) => {
     evt.preventDefault();
     const values = submit();
     console.log(values);
