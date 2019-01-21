@@ -22,7 +22,7 @@ function inputComponentReducer({ type, options, ...props }) {
     case 'date':
       return <input type={type} {...props} />;
     case 'select':
-      return <Select options={options} {...props} />;
+      return <Select type={type} options={options} {...props} />;
     default:
       return null;
   }

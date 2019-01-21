@@ -1,13 +1,18 @@
 import * as React from 'react';
-import {storiesOf} from '@storybook/react';
-import useFormFields from '../index';
+import { storiesOf } from '@storybook/react';
+import useFormFields, { FieldContainer } from '../index';
 import ShowDocs from '../utils/ShowDocs';
-import initialFields from '../__mocks__/fields'
-import FieldContainer from './components/FieldContainer';
+import initialFields from '../__mocks__/fields';
+import Container from './components/Container';
 
 const Demo = () => {
-  const [ fields, fns ] = useFormFields(initialFields);
-  const { handleChange, handleSubmit: submit, validateOnBlur, clearValues } = fns;
+  const [fields, fns] = useFormFields(initialFields);
+  const {
+    handleChange,
+    handleSubmit: submit,
+    validateOnBlur,
+    clearValues,
+  } = fns;
 
   const handleSubmit = (evt: any) => {
     evt.preventDefault();
@@ -18,16 +23,20 @@ const Demo = () => {
   return (
     <section>
       <form onSubmit={handleSubmit}>
-        {fields.map((field) => (
-          <FieldContainer
-            {...{
-              ...field,
-              key: field.name,
-              validateOnBlur,
-              handleChange,
-            }}
-          />
-        ))}
+        <fieldset>
+          <legend>Test Form</legend>
+          {fields.map(field => (
+            <FieldContainer
+              {...{
+                ...field,
+                key: field.name,
+                validateOnBlur,
+                handleChange,
+                children: Container,
+              }}
+            />
+          ))}
+        </fieldset>
         <br />
         <button type="submit">Submit</button>
         <button type="button" onClick={() => clearValues()}>
@@ -40,6 +49,4 @@ const Demo = () => {
 
 storiesOf('first', module)
   .add('Docs', () => <ShowDocs md={require('../../docs/useFormInputs.md')} />)
-  .add('Demo', () =>
-    <Demo/>
-  )
+  .add('Demo', () => <Demo />);

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { cloneDeep } from 'lodash';
+import { isEqual, cloneDeep } from 'lodash';
 
 export interface Requirement {
   ([any]: any): string | void | null;
@@ -142,3 +142,14 @@ export default function useFormFields(
 
   return [state, { handleChange, handleSubmit, validateOnBlur, clearValues }];
 }
+
+export const FieldContainer = React.memo(
+  ({ children, render, ...props }: any) => {
+    if (render) return render(props);
+    return children(props);
+  },
+  (
+    { value: prevValue, errors: prevErrors = [] },
+    { value: nextValue, errors: nextErrors = [] },
+  ) => isEqual([prevValue, prevErrors], [nextValue, nextErrors]),
+);
