@@ -45,9 +45,10 @@ const errorPusher = (field: Field) => {
 };
 
 const extractFieldValueToName = (state: State): FinalValues => {
-  return state
-    .map(({ name, value }) => ({ [name]: value }))
-    .reduce((acc, val) => Object.assign(acc, val), {});
+  return state.reduce(
+    (acc, field) => Object.assign(acc, { [field.name]: field.value }),
+    {},
+  );
 };
 
 const defaultFieldValidation = (state: State, dispatch: Function) => {
@@ -109,7 +110,7 @@ const reducer = (initialState: State) => (
 export default function useFormFields(
   initialState: State = [],
   validate: Function = defaultFieldValidation,
-): any {
+): [State, { [key: string]: Function }] {
   const [state, dispatch] = React.useReducer(
     reducer(initialState),
     cloneDeep(initialState),
@@ -131,12 +132,12 @@ export default function useFormFields(
     dispatch({ type: '@@fieldError', payload: target.name });
   };
 
-  const clearValues = () => {
-    dispatch({ type: '@@reset' });
-  };
-
   const handleSubmit = () => {
     return validate(state, dispatch);
+  };
+
+  const clearValues = () => {
+    dispatch({ type: '@@reset' });
   };
 
   return [state, { handleChange, handleSubmit, validateOnBlur, clearValues }];

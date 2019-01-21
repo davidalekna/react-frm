@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { minLength, mustContainLetter } from './validation';
 
+// todo Select from dropdown component
+
 function inputComponentReducer({ type, ...props }) {
   switch (type) {
     case 'text':

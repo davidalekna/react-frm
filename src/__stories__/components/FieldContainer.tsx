@@ -1,7 +1,7 @@
-import React, { memo } from 'react';
+import * as React from 'react';
 import { isEqual } from 'lodash';
 
-function renderFieldErrors(errors) {
+function renderFieldErrors(errors: string[]) {
   return (
     errors && (
       <ul>
@@ -15,8 +15,8 @@ function renderFieldErrors(errors) {
   );
 }
 
-const FieldContainer = memo(
-  ({ component: Field, ...props }) => {
+const FieldContainer = React.memo(
+  ({ component: Field, ...props }: any) => {
     return (
       <label key={props.name}>
         <div>{props.label}</div>

@@ -21,16 +21,16 @@ const Demo = () => {
         {fields.map((field) => (
           <FieldContainer
             {...{
+              ...field,
               key: field.name,
               validateOnBlur,
               handleChange,
-              ...field,
             }}
           />
         ))}
         <br />
         <button type="submit">Submit</button>
-        <button type="button" onClick={clearValues}>
+        <button type="button" onClick={() => clearValues()}>
           reset
         </button>
       </form>
