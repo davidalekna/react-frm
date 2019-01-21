@@ -1,8 +1,8 @@
 import * as React from 'react';
 
-function renderFieldErrors(errors: string[]) {
-  return (
-    errors && (
+function FieldErrors({ errors = [] }: { errors: string[] }) {
+  if (errors.length) {
+    return (
       <ul>
         {errors.map((err, key) => (
           <li key={key} style={{ color: 'violet' }}>
@@ -10,8 +10,9 @@ function renderFieldErrors(errors: string[]) {
           </li>
         ))}
       </ul>
-    )
-  );
+    );
+  }
+  return null;
 }
 
 const Container = ({ component: Field, ...props }) => {
@@ -28,9 +29,9 @@ const Container = ({ component: Field, ...props }) => {
         onBlur={props.validateOnBlur}
         onChange={props.handleChange}
       />
-      {renderFieldErrors(props.errors)}
+      <FieldErrors errors={...props.errors} />
     </label>
   );
-}
+};
 
 export default Container;
