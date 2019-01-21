@@ -25,6 +25,7 @@ const FieldContainer = React.memo(
           type={props.type}
           value={props.value}
           placeholder={props.placeholder}
+          options={props.options}
           checked={props.checked}
           onBlur={props.validateOnBlur}
           onChange={props.handleChange}

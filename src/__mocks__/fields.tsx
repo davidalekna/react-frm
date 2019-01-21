@@ -1,9 +1,17 @@
 import * as React from 'react';
-import { minLength, mustContainLetter } from './validation';
+import { minLength, mustContainLetter, notEmpty } from './validation';
 
 // todo Select from dropdown component
 
-function inputComponentReducer({ type, ...props }) {
+function Select({options, ...props}) {
+  return (
+    <select name={props.name} value={props.value} onChange={props.onChange}>
+      {options.map(({value}, index) => <option key={index} value={value}>{value}</option>)}
+    </select>
+  )
+}
+
+function inputComponentReducer({ type, options, ...props }) {
   switch (type) {
     case 'text':
       return <input type={type} {...props} />;
@@ -13,6 +21,8 @@ function inputComponentReducer({ type, ...props }) {
       return <input type={type} {...props} />;
     case 'date':
       return <input type={type} {...props} />;
+    case 'select':
+      return <Select options={options} {...props} />;
     default:
       return null;
   }
@@ -61,6 +71,20 @@ export default [
     value: false,
     name: 'apples',
     type: 'checkbox',
+    component: inputComponentReducer,
+  },
+  {
+    label: 'Favourite Fruit',
+    value: '',
+    name: 'faveFruit',
+    type: 'select',
+    requirements: [notEmpty],
+    options: [
+      {value: 'grapefruit'},
+      {value: 'lime'},
+      {value: 'coconut'},
+      {value: 'mango'},
+    ],
     component: inputComponentReducer,
   },
 ];
