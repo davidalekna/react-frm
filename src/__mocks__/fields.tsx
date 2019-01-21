@@ -1,14 +1,16 @@
 import * as React from 'react';
 import { minLength, mustContainLetter, notEmpty } from './validation';
 
-// todo Select from dropdown component
-
-function Select({options, ...props}) {
+function Select({ options, ...props }) {
   return (
-    <select name={props.name} value={props.value} onChange={props.onChange}>
-      {options.map(({value}, index) => <option key={index} value={value}>{value}</option>)}
+    <select {...props}>
+      {options.map(({ value }, index) => (
+        <option key={index} value={value}>
+          {value}
+        </option>
+      ))}
     </select>
-  )
+  );
 }
 
 function inputComponentReducer({ type, options, ...props }) {
@@ -80,10 +82,10 @@ export default [
     type: 'select',
     requirements: [notEmpty],
     options: [
-      {value: 'grapefruit'},
-      {value: 'lime'},
-      {value: 'coconut'},
-      {value: 'mango'},
+      { value: 'grapefruit' },
+      { value: 'lime' },
+      { value: 'coconut' },
+      { value: 'mango' },
     ],
     component: inputComponentReducer,
   },
