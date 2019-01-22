@@ -16,8 +16,10 @@ const errorPusher = (field: Field) => {
 };
 
 const extractFinalValues = (state: State): FinalValues => {
+  // TODO: currently if field value is boolean and false, gets extracted...
   return state.reduce(
-    (acc, field) => Object.assign(acc, { [field.name]: field.value }),
+    (acc, field) =>
+      Object.assign(acc, field.value ? { [field.name]: field.value } : {}),
     {},
   );
 };
@@ -35,7 +37,7 @@ const defaultFieldValidation = (state: State, dispatch: Function) => {
   }
 };
 
-const findByName = (state: State, itemName: string) => {
+const getByNameFromState = (state: State) => (itemName: string) => {
   let itemIndex: number = 0;
   const item = state.find(({ name }, index) => {
     itemIndex = index;
@@ -50,21 +52,36 @@ const findByName = (state: State, itemName: string) => {
   };
 };
 
+const findDuplicates = (state: State) => (stateToMerge: State) => {
+  return stateToMerge.filter(field => {
+    const duplicate = state.map(f => f.name).includes(field.name);
+    if (duplicate) {
+      console.error(`Duplicate field name ${field.name} will be extracted.`);
+    }
+    return !duplicate;
+  });
+};
+
 const reducer = (initialState: State) => (
   state: State,
   action: Action,
 ): State => {
+  const findByName = getByNameFromState(state);
+  const removeDuplicates = findDuplicates(state);
   switch (action.type) {
     case '@@fieldUpdate': {
-      const { item, index } = findByName(state, action.payload.name);
+      const { item, index } = findByName(action.payload.name);
       state[index] = Object.assign(item, action.payload);
       return cloneDeep(state);
     }
     case '@@fieldError': {
-      const { item, index } = findByName(state, action.payload);
+      const { item, index } = findByName(action.payload);
       const updatedItem = errorPusher({ ...item });
       state[index] = Object.assign(item, updatedItem);
       return cloneDeep(state);
+    }
+    case '@@addFields': {
+      return cloneDeep([...state, ...removeDuplicates(action.payload)]);
     }
     case '@@errors': {
       return cloneDeep(action.payload);
@@ -111,7 +128,14 @@ export default function useFormFields(
     dispatch({ type: '@@reset' });
   };
 
-  return [state, { handleChange, handleSubmit, validateOnBlur, clearValues }];
+  const addFields = (fields: State) => {
+    dispatch({ type: '@@addFields', payload: fields });
+  };
+
+  return [
+    state,
+    { handleChange, handleSubmit, validateOnBlur, clearValues, addFields },
+  ];
 }
 
 export const FieldContainer = React.memo(

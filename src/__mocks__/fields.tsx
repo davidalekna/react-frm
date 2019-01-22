@@ -1,9 +1,25 @@
 import * as React from 'react';
 import { minLength, mustContainLetter, notEmpty } from './validation';
 
+// AVAILABLE INPUT TYPES ON HTML5
+// search
+// email
+// url
+// tel
+// number
+// range
+// date
+// month
+// week
+// time
+// datetime
+// datetime-local
+// color
+
 function Select({ options, ...props }) {
   return (
     <select {...props}>
+      <option label="" />
       {options.map(({ value }, index) => (
         <option key={index} value={value}>
           {value}
@@ -13,7 +29,7 @@ function Select({ options, ...props }) {
   );
 }
 
-function inputComponentReducer({ type, options, ...props }) {
+function fieldsMapper({ type, options, ...props }) {
   switch (type) {
     case 'text':
       return <input type={type} {...props} />;
@@ -43,7 +59,7 @@ export default [
       mustContainLetter('b'),
       mustContainLetter('c'),
     ],
-    component: inputComponentReducer,
+    component: fieldsMapper,
   },
   {
     label: 'Last Name',
@@ -52,28 +68,28 @@ export default [
     name: 'lastName',
     type: 'text',
     requirements: [minLength(6), mustContainLetter('d')],
-    component: inputComponentReducer,
+    component: fieldsMapper,
   },
   {
     label: 'Date of Birth',
     value: '',
     name: 'dob',
     type: 'date',
-    component: inputComponentReducer,
+    component: fieldsMapper,
   },
   {
     label: 'Favourite number',
     value: 0,
     name: 'favouriteNumber',
     type: 'number',
-    component: inputComponentReducer,
+    component: fieldsMapper,
   },
   {
     label: 'Like apples',
     value: false,
     name: 'apples',
     type: 'checkbox',
-    component: inputComponentReducer,
+    component: fieldsMapper,
   },
   {
     label: 'Favourite Fruit',
@@ -87,6 +103,6 @@ export default [
       { value: 'coconut' },
       { value: 'mango' },
     ],
-    component: inputComponentReducer,
+    component: fieldsMapper,
   },
 ];
