@@ -17,11 +17,13 @@ const errorPusher = (field: Field) => {
 
 const extractFinalValues = (state: State): FinalValues => {
   // TODO: currently if field value is boolean and false, gets extracted...
-  return state.reduce(
+  const extracted = state.reduce(
     (acc, field) =>
       Object.assign(acc, field.value ? { [field.name]: field.value } : {}),
     {},
   );
+
+  return [extracted, state];
 };
 
 const defaultFieldValidation = (state: State, dispatch: Function) => {
