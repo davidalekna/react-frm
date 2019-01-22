@@ -1,35 +1,6 @@
 import * as React from 'react';
 import { isEqual, cloneDeep } from 'lodash';
-
-export interface Requirement {
-  ([any]: any): string | void | null;
-}
-
-export interface Field {
-  name: string;
-  value: any;
-  type: string;
-  errors?: Array<string>;
-  label?: string;
-  placeholder?: string;
-  requirements?: Requirement[];
-  component?: Function;
-  [key: string]: any;
-}
-
-export type State = Field[];
-// export interface State extends Array<Field> {}
-
-export interface Action {
-  type: string;
-  payload?: Field | any;
-}
-
-export type InputEvent = React.ChangeEvent<HTMLInputElement>;
-
-export interface FinalValues {
-  [name: string]: any;
-}
+import { Field, State, Action, InputEvent, FinalValues } from './types';
 
 const errorPusher = (field: Field) => {
   if (field.requirements) {
@@ -44,7 +15,7 @@ const errorPusher = (field: Field) => {
   return field;
 };
 
-const extractFieldValueToName = (state: State): FinalValues => {
+const extractFinalValues = (state: State): FinalValues => {
   return state.reduce(
     (acc, field) => Object.assign(acc, { [field.name]: field.value }),
     {},
@@ -60,7 +31,7 @@ const defaultFieldValidation = (state: State, dispatch: Function) => {
     alert('fix your errors please!');
     return;
   } else {
-    return extractFieldValueToName(stateWithErrors);
+    return extractFinalValues(stateWithErrors);
   }
 };
 
