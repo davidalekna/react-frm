@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { isEqual, cloneDeep } from 'lodash';
-import { Field, State, Action, InputEvent, FinalValues } from './types';
+import { IField, State, FormActions, InputEvent, IFinalValues } from './types';
 
-const errorPusher = (field: Field) => {
+const errorPusher = (field: IField) => {
   if (field.requirements) {
     field.errors = [];
     for (const fn of field.requirements) {
@@ -15,7 +15,7 @@ const errorPusher = (field: Field) => {
   return field;
 };
 
-const extractFinalValues = (state: State): FinalValues => {
+const extractFinalValues = (state: State): IFinalValues => {
   const isBoolean = (val: any) => typeof val === 'boolean';
   return state.reduce((acc, field) => {
     let fv = {};
@@ -69,7 +69,7 @@ const findDuplicates = (state: State) => (stateToMerge: State) => {
 
 const reducer = (initialState: State) => (
   state: State,
-  action: Action,
+  action: FormActions,
 ): State => {
   const findByName = getFromStateByName(state);
   const removeDuplicates = findDuplicates(state);
