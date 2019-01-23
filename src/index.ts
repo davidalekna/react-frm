@@ -16,12 +16,17 @@ const errorPusher = (field: Field) => {
 };
 
 const extractFinalValues = (state: State): FinalValues => {
-  // TODO: currently if field value is boolean and false, gets extracted...
-  return state.reduce(
-    (acc, field) =>
-      Object.assign(acc, field.value ? { [field.name]: field.value } : {}),
-    {},
-  );
+  const isBoolean = (val: any) => typeof val === 'boolean';
+  return state.reduce((acc, field) => {
+    let obj = {};
+    if (field.value && !isBoolean(field.value)) {
+      obj = { [field.name]: field.value };
+    }
+    if (isBoolean(field.value)) {
+      obj = { [field.name]: field.value };
+    }
+    return Object.assign(acc, obj);
+  }, {});
 };
 
 const defaultFieldValidation = (state: State, dispatch: Function) => {
@@ -37,7 +42,7 @@ const defaultFieldValidation = (state: State, dispatch: Function) => {
   }
 };
 
-const getByNameFromState = (state: State) => (itemName: string) => {
+const getFromStateByName = (state: State) => (itemName: string) => {
   let itemIndex: number = 0;
   const item = state.find(({ name }, index) => {
     itemIndex = index;
@@ -66,7 +71,7 @@ const reducer = (initialState: State) => (
   state: State,
   action: Action,
 ): State => {
-  const findByName = getByNameFromState(state);
+  const findByName = getFromStateByName(state);
   const removeDuplicates = findDuplicates(state);
   switch (action.type) {
     case '@@fieldUpdate': {
