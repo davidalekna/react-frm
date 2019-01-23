@@ -18,14 +18,14 @@ const errorPusher = (field: Field) => {
 const extractFinalValues = (state: State): FinalValues => {
   const isBoolean = (val: any) => typeof val === 'boolean';
   return state.reduce((acc, field) => {
-    let obj = {};
+    let fv = {};
     if (field.value && !isBoolean(field.value)) {
-      obj = { [field.name]: field.value };
+      fv = { [field.name]: field.value };
     }
     if (isBoolean(field.value)) {
-      obj = { [field.name]: field.value };
+      fv = { [field.name]: field.value };
     }
-    return Object.assign(acc, obj);
+    return Object.assign(acc, fv);
   }, {});
 };
 
@@ -61,7 +61,7 @@ const findDuplicates = (state: State) => (stateToMerge: State) => {
   return stateToMerge.filter(field => {
     const duplicate = state.map(f => f.name).includes(field.name);
     if (duplicate) {
-      console.error(`Duplicate field name ${field.name} will be extracted.`);
+      console.error(`Duplicate field name ${field.name} extracted.`);
     }
     return !duplicate;
   });

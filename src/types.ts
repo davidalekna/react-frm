@@ -10,7 +10,6 @@ export interface Field {
   label?: string;
   placeholder?: string;
   requirements?: Requirement[];
-  component?: Function;
   [key: string]: any;
 }
 
