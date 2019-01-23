@@ -28,7 +28,7 @@ interface IAction {
 
 class FieldUpdate implements IAction {
   readonly type = '@@fieldUpdate';
-  constructor(public payload: { name: string; value: any }) {}
+  constructor(public payload: { name: string; value: unknown }) {}
 }
 
 class FieldError implements IAction {
