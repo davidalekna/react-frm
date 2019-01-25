@@ -118,7 +118,6 @@ export default function useFormFields(
 
   const handleChange = (input: InputEvent | ICustomInput) => {
     if ('target' in input) {
-      console.log('we are in input');
       const { target } = input;
       if (!target.name) throw Error('no input name');
       dispatch({
