@@ -15,6 +15,11 @@ export type State = { readonly [K in keyof IField]: IField[K] }[];
 
 export type InputEvent = React.ChangeEvent<HTMLInputElement>;
 
+export interface ICustomInput {
+  name: string;
+  value: string;
+}
+
 export interface IFinalValues {
   [key: string]: any;
 }

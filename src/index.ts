@@ -1,6 +1,13 @@
 import * as React from 'react';
 import { isEqual, cloneDeep } from 'lodash';
-import { IField, State, FormActions, InputEvent, IFinalValues } from './types';
+import {
+  IField,
+  State,
+  FormActions,
+  InputEvent,
+  ICustomInput,
+  IFinalValues,
+} from './types';
 
 const errorPusher = (field: IField) => {
   if (field.requirements) {
@@ -109,20 +116,41 @@ export default function useFormFields(
     cloneDeep(initialState),
   );
 
-  const handleChange = ({ target }: InputEvent) => {
-    if (!target.name) throw Error('no input name');
-    dispatch({
-      type: '@@fieldUpdate',
-      payload: {
-        name: target.name,
-        value: target.type === 'checkbox' ? target.checked : target.value,
-      },
-    });
+  const handleChange = (input: InputEvent | ICustomInput) => {
+    if ('target' in input) {
+      console.log('we are in input');
+      const { target } = input;
+      if (!target.name) throw Error('no input name');
+      dispatch({
+        type: '@@fieldUpdate',
+        payload: {
+          name: target.name,
+          value: target.type === 'checkbox' ? target.checked : target.value,
+        },
+      });
+    } else {
+      const { name, value } = input;
+      if (!name) throw Error('no input name');
+      dispatch({
+        type: '@@fieldUpdate',
+        payload: {
+          name,
+          value,
+        },
+      });
+    }
   };
 
-  const validateOnBlur = ({ target }: InputEvent) => {
-    if (!target.name) throw Error('no input name');
-    dispatch({ type: '@@fieldError', payload: target.name });
+  const validateOnBlur = (input: InputEvent | ICustomInput) => {
+    if ('target' in input) {
+      const { target } = input;
+      if (!target.name) throw Error('no input name');
+      dispatch({ type: '@@fieldError', payload: target.name });
+    } else {
+      const { name } = input;
+      if (!name) throw Error('no input name');
+      dispatch({ type: '@@fieldError', payload: name });
+    }
   };
 
   const handleSubmit = () => {
