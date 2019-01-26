@@ -2,17 +2,28 @@ import * as React from 'react';
 import Select from 'react-select';
 import { notEmpty } from '../../__mocks__/validation';
 
-function fieldsMapper({ type, options, ...props }) {
+const RRSelect = ({ options, ...props }) => {
+  const cleanValue =
+    typeof props.value === 'string' && props.value.length
+      ? options.find(o => o.value === props.value)
+      : props.value;
+
+  return (
+    <Select
+      {...props}
+      defaultValue={cleanValue}
+      value={cleanValue}
+      options={options}
+      onChange={item => props.onChange({ name: props.name, value: item.value })}
+      onBlur={item => props.onBlur({ name: props.name, value: item.value })}
+    />
+  );
+};
+
+function fieldsMapper({ type, options, checked, ...props }) {
   switch (type) {
     case 'select':
-      return (
-        <Select
-          {...props}
-          options={options}
-          onChange={value => props.onChange({ name: props.name, value })}
-          onBlur={value => props.onBlur({ name: props.name, value })}
-        />
-      );
+      return <RRSelect options={options} {...props} />;
     default:
       return <input type={type} {...props} />;
   }
