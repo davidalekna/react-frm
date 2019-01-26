@@ -1,10 +1,6 @@
 import * as React from 'react';
 import Select from '../components/Select';
-import {
-  minLength,
-  mustContainLetter,
-  notEmpty,
-} from '../../__mocks__/validation';
+import { minLength, mustContainLetter } from '../../__mocks__/validation';
 
 function fieldsMapper({ type, options, ...props }) {
   // AVAILABLE INPUT TYPES ON HTML5
@@ -58,7 +54,7 @@ export const person = [
     name: 'dob',
     type: 'date',
   },
-].map(field => ({ ...field, component: fieldsMapper }));
+].map(field => ({ ...field, category: 'person', component: fieldsMapper }));
 
 export const address = [
   {
@@ -103,7 +99,7 @@ export const address = [
     name: 'postcode',
     type: 'text',
   },
-].map(field => ({ ...field, component: fieldsMapper }));
+].map(field => ({ ...field, category: 'address', component: fieldsMapper }));
 
 export const otherFields = [
   {
@@ -160,4 +156,8 @@ export const otherFields = [
     name: 'color',
     type: 'color',
   },
-].map(field => ({ ...field, component: fieldsMapper }));
+].map(field => ({
+  ...field,
+  category: 'otherFields',
+  component: fieldsMapper,
+}));

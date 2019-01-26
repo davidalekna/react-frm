@@ -21,6 +21,14 @@ const Demo = () => {
     console.log(values);
   };
 
+  const categories = fields.reduce(
+    (acc, val) => ({
+      ...acc,
+      [val.category]: acc[val.category] ? acc[val.category].concat(val) : [val],
+    }),
+    {},
+  );
+
   return (
     <section>
       <div>
@@ -29,20 +37,22 @@ const Demo = () => {
         <button onClick={() => addFields(otherFields)}>add other fields</button>
       </div>
       <form onSubmit={handleSubmit}>
-        <fieldset>
-          <legend>Test Form</legend>
-          {fields.map(field => (
-            <FieldContainer
-              {...{
-                ...field,
-                key: field.name,
-                validateOnBlur,
-                handleChange,
-                children: Container,
-              }}
-            />
-          ))}
-        </fieldset>
+        {Object.keys(categories).map((category, key) => (
+          <fieldset key={key}>
+            <legend>{category}</legend>
+            {categories[category].map(field => (
+              <FieldContainer
+                {...{
+                  ...field,
+                  key: field.name,
+                  validateOnBlur,
+                  handleChange,
+                  children: Container,
+                }}
+              />
+            ))}
+          </fieldset>
+        ))}
         <br />
         <button type="submit">Submit</button>
         <button type="button" onClick={() => clearValues()}>
