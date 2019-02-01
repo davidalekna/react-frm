@@ -3,7 +3,7 @@ import { isEqual, merge, cloneDeep } from 'lodash';
 import { createObject, isBoolean } from './utils/helpers';
 import {
   IField,
-  State,
+  FormState,
   FormActions,
   InputEvent,
   ICustomInput,
@@ -24,7 +24,7 @@ const errorPusher = (field: IField) => {
   return field;
 };
 
-const extractFinalValues = (state: State): IFinalValues => {
+const extractFinalValues = (state: FormState): IFinalValues => {
   return state.reduce((acc, field) => {
     if ((field.value && !isBoolean(field.value)) || isBoolean(field.value)) {
       return merge(acc, createObject({ [field.name]: field.value }));
@@ -34,9 +34,9 @@ const extractFinalValues = (state: State): IFinalValues => {
 };
 
 const defaultFieldValidation = (
-  state: State,
+  state: FormState,
   dispatch: Function,
-): [{ [key: string]: unknown } | void, State | void] => {
+): [{ [key: string]: unknown } | void, FormState | void] => {
   const stateWithErrors = [...state].map(errorPusher);
   dispatch({ type: '@@errors', payload: stateWithErrors });
   const errors = stateWithErrors.map(field => field.errors || []);
@@ -48,7 +48,7 @@ const defaultFieldValidation = (
   }
 };
 
-const getFromStateByName = (state: State) => (itemName: string) => {
+const getFromStateByName = (state: FormState) => (itemName: string) => {
   let itemIndex: number = 0;
   const item = state.find(({ name }, index) => {
     itemIndex = index;
@@ -63,7 +63,7 @@ const getFromStateByName = (state: State) => (itemName: string) => {
   };
 };
 
-const findDuplicates = (state: State) => (stateToMerge: State) => {
+const findDuplicates = (state: FormState) => (stateToMerge: FormState) => {
   return stateToMerge.filter(field => {
     const duplicate = state.map(f => f.name).includes(field.name);
     if (duplicate) {
@@ -73,10 +73,10 @@ const findDuplicates = (state: State) => (stateToMerge: State) => {
   });
 };
 
-const reducer = (initialState: State) => (
-  state: State,
+const reducer = (initialState: FormState) => (
+  state: FormState,
   action: FormActions,
-): State => {
+): FormState => {
   const findByName = getFromStateByName(state);
   const removeDuplicates = findDuplicates(state);
   switch (action.type) {
@@ -110,7 +110,7 @@ export default function useFormFields({
   initialFields,
   validate = defaultFieldValidation,
   onSubmit = () => {},
-}: IDefaultProps): [State, { [key: string]: Function }] {
+}: IDefaultProps): [FormState, { [key: string]: Function }] {
   const [state, dispatch] = React.useReducer(
     reducer(initialFields),
     cloneDeep(initialFields),
@@ -161,7 +161,7 @@ export default function useFormFields({
     dispatch({ type: '@@reset' });
   };
 
-  const addFields = (fields: State) => {
+  const addFields = (fields: FormState) => {
     dispatch({ type: '@@addFields', payload: fields });
   };
 

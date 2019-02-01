@@ -11,7 +11,7 @@ export interface IField {
   [key: string]: any;
 }
 
-export type State = { readonly [K in keyof IField]: IField[K] }[];
+export type FormState = { readonly [K in keyof IField]: IField[K] }[];
 
 export type InputEvent = React.ChangeEvent<HTMLInputElement>;
 
@@ -25,7 +25,7 @@ export interface IFinalValues {
 }
 
 export interface IDefaultProps {
-  initialFields: State;
+  initialFields: FormState;
   validate?: Function;
   onSubmit?: Function;
 }
@@ -49,12 +49,12 @@ class FieldError implements IAction {
 
 class AddFields implements IAction {
   readonly type = '@@addFields';
-  constructor(public payload: State) {}
+  constructor(public payload: FormState) {}
 }
 
 class Errors implements IAction {
   readonly type = '@@errors';
-  constructor(public payload: State) {}
+  constructor(public payload: FormState) {}
 }
 
 class Reset implements IAction {
