@@ -24,6 +24,12 @@ export interface IFinalValues {
   [key: string]: any;
 }
 
+export interface IDefaultProps {
+  initialFields: State;
+  validate?: Function;
+  onSubmit?: Function;
+}
+
 /**
  * reducer actions
  */

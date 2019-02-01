@@ -7,6 +7,7 @@ import {
   InputEvent,
   ICustomInput,
   IFinalValues,
+  IDefaultProps,
 } from './types';
 
 const errorPusher = (field: IField) => {
@@ -42,8 +43,7 @@ const defaultFieldValidation = (state: State, dispatch: Function) => {
   const errors = stateWithErrors.map(field => field.errors || []);
   // .flat() doesnt work for typescript...
   if (errors.concat.apply([], errors).filter(Boolean).length > 0) {
-    alert('fix your errors please!');
-    return;
+    return [undefined];
   } else {
     return [extractFinalValues(stateWithErrors), stateWithErrors];
   }
@@ -107,13 +107,14 @@ const reducer = (initialState: State) => (
   }
 };
 
-export default function useFormFields(
-  initialState: State = [],
-  validate: Function = defaultFieldValidation,
-): [State, { [key: string]: Function }] {
+export default function useFormFields({
+  initialFields,
+  validate = defaultFieldValidation,
+  onSubmit = () => {},
+}: IDefaultProps): [State, { [key: string]: Function }] {
   const [state, dispatch] = React.useReducer(
-    reducer(initialState),
-    cloneDeep(initialState),
+    reducer(initialFields),
+    cloneDeep(initialFields),
   );
 
   const handleChange = (input: InputEvent | ICustomInput) => {
@@ -140,7 +141,7 @@ export default function useFormFields(
     }
   };
 
-  const validateOnBlur = (input: InputEvent | ICustomInput) => {
+  const onBlur = (input: InputEvent | ICustomInput) => {
     if ('target' in input) {
       const { target } = input;
       if (!target.name) throw Error('no input name');
@@ -152,8 +153,9 @@ export default function useFormFields(
     }
   };
 
-  const handleSubmit = () => {
-    return validate(state, dispatch);
+  const handleSubmit = evt => {
+    evt.preventDefault();
+    onSubmit(validate(state, dispatch));
   };
 
   const clearValues = () => {
@@ -166,7 +168,7 @@ export default function useFormFields(
 
   return [
     state,
-    { handleChange, handleSubmit, validateOnBlur, clearValues, addFields },
+    { handleChange, handleSubmit, onBlur, clearValues, addFields },
   ];
 }
 

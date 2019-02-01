@@ -26,7 +26,7 @@ const Container = ({ component: Field, ...props }) => {
         placeholder={props.placeholder}
         options={props.options}
         checked={props.checked}
-        onBlur={props.validateOnBlur}
+        onBlur={props.onBlur}
         onChange={props.handleChange}
       />
       <FieldErrors errors={...props.errors} />

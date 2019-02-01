@@ -5,21 +5,13 @@ import ShowDocs from '../utils/ShowDocs';
 import { person, address, otherFields } from './fields/categories';
 import Container from './components/Container';
 
-const Demo = () => {
-  const [fields, fns] = useFormFields(person);
-  const {
-    addFields,
-    handleChange,
-    handleSubmit: submit,
-    validateOnBlur,
-    clearValues,
-  } = fns;
+const onSubmit = ([values]) => {
+  console.log(values);
+};
 
-  const handleSubmit = (evt: any) => {
-    evt.preventDefault();
-    const values = submit();
-    console.log(values);
-  };
+const Demo = () => {
+  const [fields, fns] = useFormFields({ initialFields: person, onSubmit });
+  const { handleSubmit, handleChange, addFields, onBlur, clearValues } = fns;
 
   const categories = fields.reduce(
     (acc, val) => ({
@@ -45,7 +37,7 @@ const Demo = () => {
                 {...{
                   ...field,
                   key: field.name,
-                  validateOnBlur,
+                  onBlur,
                   handleChange,
                   children: Container,
                 }}

@@ -5,24 +5,17 @@ import ShowDocs from '../utils/ShowDocs';
 import initialFields from './fields/reactSelect';
 import Container from './components/Container';
 
-const Demo = () => {
-  const [fields, fns] = useFormFields(initialFields);
-  const {
-    handleChange,
-    handleSubmit: submit,
-    validateOnBlur,
-    clearValues,
-  } = fns;
+const onSubmit = ([values]) => {
+  console.log(values);
+};
 
-  const handleSubmit = (evt: any) => {
-    evt.preventDefault();
-    const values = submit();
-    console.log(values);
-  };
+const Demo = () => {
+  const [fields, fns] = useFormFields({ initialFields, onSubmit });
+  const { handleSubmit, handleChange, onBlur, clearValues } = fns;
 
   return (
     <section>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={evt => handleSubmit(evt)}>
         <fieldset>
           <legend>Test Form</legend>
           {fields.map(field => (
@@ -30,7 +23,7 @@ const Demo = () => {
               {...{
                 ...field,
                 key: field.name,
-                validateOnBlur,
+                onBlur,
                 handleChange,
                 children: Container,
               }}
