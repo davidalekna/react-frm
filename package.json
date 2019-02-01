@@ -11,7 +11,7 @@
   "scripts": {
     "start": "yarn storybook",
     "test": "echo hmm...",
-    "build": "tsc",
+    "build": "yarn rimraf lib && tsc",
     "clean": "rimraf lib storybook-static",
     "storybook": "start-storybook -p 6008",
     "storybook:build": "build-storybook",
@@ -36,20 +36,21 @@
     "@semantic-release/git": "^7.0.5",
     "@semantic-release/npm": "^5.0.5",
     "@storybook/react": "^4.1.6",
-    "@types/lodash": "^4.14.119",
-    "@types/react": "^16.7.18",
     "babel-loader": "^8.0.5",
-    "react": "16.7.0-alpha.2",
-    "react-dom": "16.7.0-alpha.2",
+    "react": "^16.8.0-alpha.1",
+    "react-dom": "^16.8.0-alpha.1",
     "react-select": "^2.3.0",
     "react-testing-library": "^5.4.4",
     "rimraf": "^2.6.2",
     "semantic-release": "^15.10.6",
     "ts-loader": "^5.3.3",
-    "ts-node": "^7.0.1",
+    "ts-node": "^8.0.2",
     "typescript": "^3.2.2"
   },
-  "peerDependencies": {},
+  "peerDependencies": {
+    "react": "^16.8.0-alpha.1",
+    "react-dom": "^16.8.0-alpha.1"
+  },
   "release": {
     "verifyConditions": [
       "@semantic-release/changelog",
@@ -63,6 +64,8 @@
     ]
   },
   "dependencies": {
+    "@types/lodash": "^4.14.120",
+    "@types/react": "^16.7.22",
     "lodash": "^4.17.11"
   }
 }

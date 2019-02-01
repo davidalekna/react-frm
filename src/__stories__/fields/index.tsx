@@ -61,14 +61,14 @@ export default [
   {
     label: 'Line 1',
     value: '',
-    name: 'a.d.d.r.e.s.line_1',
+    name: 'a.d.d.r.e.s.s.line_1',
     requirements: [notEmpty],
     type: 'text',
   },
   {
     label: 'Line 2',
     value: '',
-    name: 'a.d.d.r.e.s.line_2',
+    name: 'a.d.d.r.e.s.s.line_2',
     type: 'text',
   },
   {
