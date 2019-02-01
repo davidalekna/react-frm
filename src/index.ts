@@ -116,27 +116,33 @@ export default function useFormFields({
     cloneDeep(initialFields),
   );
 
+  const onChangeTarget = ({ target }: InputEvent) => {
+    if (!target.name) throw Error('no input name');
+    dispatch({
+      type: '@@fieldUpdate',
+      payload: {
+        name: target.name,
+        value: target.type === 'checkbox' ? target.checked : target.value,
+      },
+    });
+  };
+
+  const onChangeCustom = ({ name, value }: ICustomInput) => {
+    if (!name) throw Error('no input name');
+    dispatch({
+      type: '@@fieldUpdate',
+      payload: {
+        name,
+        value,
+      },
+    });
+  };
+
   const onChange = (input: InputEvent | ICustomInput) => {
     if ('target' in input) {
-      const { target } = input;
-      if (!target.name) throw Error('no input name');
-      dispatch({
-        type: '@@fieldUpdate',
-        payload: {
-          name: target.name,
-          value: target.type === 'checkbox' ? target.checked : target.value,
-        },
-      });
+      onChangeTarget(input);
     } else {
-      const { name, value } = input;
-      if (!name) throw Error('no input name');
-      dispatch({
-        type: '@@fieldUpdate',
-        payload: {
-          name,
-          value,
-        },
-      });
+      onChangeCustom(input);
     }
   };
 
