@@ -15,20 +15,11 @@ function FieldErrors({ errors = [] }: { errors: string[] }) {
   return null;
 }
 
-const Container = ({ component: Field, ...props }) => {
+const Container = ({ component: Field, label, ...props }) => {
   return (
-    <label key={props.name}>
-      <div>{props.label}</div>
-      <Field
-        name={props.name}
-        type={props.type}
-        value={props.value}
-        placeholder={props.placeholder}
-        options={props.options}
-        checked={props.checked}
-        onBlur={props.onBlur}
-        onChange={props.handleChange}
-      />
+    <label>
+      <div>{label}</div>
+      <Field {...props} />
       <FieldErrors errors={...props.errors} />
     </label>
   );

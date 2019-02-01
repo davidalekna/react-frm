@@ -11,7 +11,7 @@ const onSubmit = ([values]) => {
 
 const Demo = () => {
   const [fields, fns] = useFormFields({ initialFields: person, onSubmit });
-  const { handleSubmit, handleChange, addFields, onBlur, clearValues } = fns;
+  const { handleSubmit, onChange, addFields, onBlur, clearValues } = fns;
 
   const categories = fields.reduce(
     (acc, val) => ({
@@ -38,7 +38,7 @@ const Demo = () => {
                   ...field,
                   key: field.name,
                   onBlur,
-                  handleChange,
+                  onChange,
                   children: Container,
                 }}
               />

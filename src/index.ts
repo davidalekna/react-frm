@@ -116,7 +116,7 @@ export default function useFormFields({
     cloneDeep(initialFields),
   );
 
-  const handleChange = (input: InputEvent | ICustomInput) => {
+  const onChange = (input: InputEvent | ICustomInput) => {
     if ('target' in input) {
       const { target } = input;
       if (!target.name) throw Error('no input name');
@@ -165,10 +165,7 @@ export default function useFormFields({
     dispatch({ type: '@@addFields', payload: fields });
   };
 
-  return [
-    state,
-    { handleChange, handleSubmit, onBlur, clearValues, addFields },
-  ];
+  return [state, { handleSubmit, onChange, onBlur, clearValues, addFields }];
 }
 
 export const FieldContainer = React.memo(

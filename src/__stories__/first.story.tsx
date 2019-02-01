@@ -11,7 +11,7 @@ const onSubmit = ([values]) => {
 
 const Demo = () => {
   const [fields, fns] = useFormFields({ initialFields, onSubmit });
-  const { handleChange, handleSubmit, onBlur, clearValues } = fns;
+  const { handleSubmit, onChange, onBlur, clearValues } = fns;
 
   return (
     <section>
@@ -24,7 +24,7 @@ const Demo = () => {
                 ...field,
                 key: field.name,
                 onBlur,
-                handleChange,
+                onChange,
                 children: Container,
               }}
             />
