@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { isEqual, cloneDeep } from 'lodash';
+import { isEqual, merge, cloneDeep } from 'lodash';
+import { createObject } from './utils/helpers';
 import {
   IField,
   State,
@@ -28,12 +29,12 @@ const extractFinalValues = (state: State): IFinalValues => {
   return state.reduce((acc, field) => {
     let fv = {};
     if (field.value && !isBoolean(field.value)) {
-      fv = { [field.name]: field.value };
+      Object.assign(fv, createObject({ [field.name]: field.value }));
     }
     if (isBoolean(field.value)) {
-      fv = { [field.name]: field.value };
+      Object.assign(fv, createObject({ [field.name]: field.value }));
     }
-    return Object.assign(acc, fv);
+    return merge(acc, fv);
   }, {});
 };
 

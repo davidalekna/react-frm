@@ -59,6 +59,33 @@ export default [
     type: 'date',
   },
   {
+    label: 'Line 1',
+    value: '',
+    name: 'a.d.d.r.e.s.line_1',
+    requirements: [notEmpty],
+    type: 'text',
+  },
+  {
+    label: 'Line 2',
+    value: '',
+    name: 'a.d.d.r.e.s.line_2',
+    type: 'text',
+  },
+  {
+    label: 'City',
+    value: '',
+    name: 'a.d.d.r.e.s.city',
+    requirements: [notEmpty],
+    type: 'text',
+  },
+  {
+    label: 'Postcode',
+    value: '',
+    name: 'a.d.d.r.e.s.postcode',
+    requirements: [notEmpty],
+    type: 'text',
+  },
+  {
     label: 'Favourite number',
     value: 0,
     name: 'favouriteNumber',
