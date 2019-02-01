@@ -10,9 +10,12 @@ module.exports = {
         loader: 'ts-loader',
         include: [SRC_PATH],
       },
+      {
+        test: /\.css$/,
+        use: ['style-loader', 'css-loader'],
+      },
     ],
   },
-
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.jsx'],
     enforceExtension: false,
