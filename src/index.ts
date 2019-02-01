@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { isEqual, merge, cloneDeep } from 'lodash';
-import { createObject } from './utils/helpers';
+import { createObject, isBoolean } from './utils/helpers';
 import {
   IField,
   State,
@@ -25,16 +25,11 @@ const errorPusher = (field: IField) => {
 };
 
 const extractFinalValues = (state: State): IFinalValues => {
-  const isBoolean = (val: any) => typeof val === 'boolean';
   return state.reduce((acc, field) => {
-    let fv = {};
-    if (field.value && !isBoolean(field.value)) {
-      Object.assign(fv, createObject({ [field.name]: field.value }));
+    if ((field.value && !isBoolean(field.value)) || isBoolean(field.value)) {
+      return merge(acc, createObject({ [field.name]: field.value }));
     }
-    if (isBoolean(field.value)) {
-      Object.assign(fv, createObject({ [field.name]: field.value }));
-    }
-    return merge(acc, fv);
+    return acc;
   }, {});
 };
 

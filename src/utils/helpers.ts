@@ -16,3 +16,5 @@ export const createObject = (obj: { [key: string]: unknown }) => {
     }, {});
   return getNestedObject(obj);
 };
+
+export const isBoolean = (val: unknown) => typeof val === 'boolean';
