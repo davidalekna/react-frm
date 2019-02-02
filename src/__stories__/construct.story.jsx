@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { storiesOf } from '@storybook/react';
+import { Wrapper } from './components/styles';
 import useFormFields, { FieldContainer } from '../index';
 import ShowDocs from '../utils/ShowDocs';
 import { person, address, otherFields } from './fields/categories';
@@ -22,36 +23,40 @@ const Demo = () => {
   );
 
   return (
-    <section>
-      <div>
-        Add additional fields
-        <button onClick={() => addFields(address)}>add address fields</button>
-        <button onClick={() => addFields(otherFields)}>add other fields</button>
-      </div>
-      <form onSubmit={handleSubmit}>
-        {Object.keys(categories).map((category, key) => (
-          <fieldset key={key}>
-            <legend>{category}</legend>
-            {categories[category].map(field => (
-              <FieldContainer
-                {...{
-                  ...field,
-                  key: field.name,
-                  onBlur,
-                  onChange,
-                  children: Container,
-                }}
-              />
-            ))}
-          </fieldset>
-        ))}
-        <br />
-        <button type="submit">Submit</button>
-        <button type="button" onClick={() => clearValues()}>
-          reset
-        </button>
-      </form>
-    </section>
+    <Wrapper>
+      <section>
+        <div>
+          Add additional fields
+          <button onClick={() => addFields(address)}>add address fields</button>
+          <button onClick={() => addFields(otherFields)}>
+            add other fields
+          </button>
+        </div>
+        <form onSubmit={handleSubmit}>
+          {Object.keys(categories).map((category, key) => (
+            <fieldset key={key}>
+              <legend>{category}</legend>
+              {categories[category].map(field => (
+                <FieldContainer
+                  {...{
+                    ...field,
+                    key: field.name,
+                    onBlur,
+                    onChange,
+                    children: Container,
+                  }}
+                />
+              ))}
+            </fieldset>
+          ))}
+          <br />
+          <button type="submit">Submit</button>
+          <button type="button" onClick={() => clearValues()}>
+            reset
+          </button>
+        </form>
+      </section>
+    </Wrapper>
   );
 };
 

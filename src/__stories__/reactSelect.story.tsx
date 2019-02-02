@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { storiesOf } from '@storybook/react';
+import { Wrapper } from './components/styles';
 import ShowDocs from '../utils/ShowDocs';
 import initialFields from './fields/reactSelect';
 import Form from './components/Form';
@@ -9,7 +10,15 @@ const onSubmit = ([values]) => {
 };
 
 const Demo = () => {
-  return <Form initialFields={initialFields} onSubmit={onSubmit} />;
+  return (
+    <Wrapper>
+      <Form
+        formName="React Select"
+        initialFields={initialFields}
+        onSubmit={onSubmit}
+      />
+    </Wrapper>
+  );
 };
 
 storiesOf('react select', module)

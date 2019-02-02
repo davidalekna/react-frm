@@ -7,3 +7,7 @@ export const StyledLabelText = styled.div`
   color: #999;
   line-height: 1.5rem;
 `;
+
+export const Wrapper = styled.div`
+  padding: 20px 50px;
+`;

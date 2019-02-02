@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { storiesOf } from '@storybook/react';
+import { Wrapper } from './components/styles';
 import ShowDocs from '../utils/ShowDocs';
 import initialFields from './fields/antd';
 import Form from './components/Form';
@@ -10,13 +11,13 @@ const onSubmit = ([values]) => {
 
 const Demo = () => {
   return (
-    <div style={{ padding: '10px 50px' }}>
+    <Wrapper>
       <Form
         formName="Ant Design Form"
         initialFields={initialFields}
         onSubmit={onSubmit}
       />
-    </div>
+    </Wrapper>
   );
 };
 
