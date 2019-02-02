@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { StyledLabel, StyledLabelText } from './styles';
 
 function FieldErrors({ errors = [] }: { errors: string[] }) {
   if (errors.length) {
@@ -15,13 +16,13 @@ function FieldErrors({ errors = [] }: { errors: string[] }) {
   return null;
 }
 
-const Container = ({ component: Field, label, ...props }) => {
+const Container = ({ component: Field, ...props }) => {
   return (
-    <label>
-      <div>{label}</div>
+    <StyledLabel>
+      <StyledLabelText>{props.label}</StyledLabelText>
       <Field {...props} />
       <FieldErrors errors={...props.errors} />
-    </label>
+    </StyledLabel>
   );
 };
 

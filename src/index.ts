@@ -174,6 +174,7 @@ export default function useFormFields({
   return [state, { handleSubmit, onChange, onBlur, clearValues, addFields }];
 }
 
+// NOTE: could take onChange and onBlur from context
 export const FieldContainer = React.memo(
   ({ children, render, ...props }: any) => {
     if (render) return render(props);

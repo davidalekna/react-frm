@@ -10,8 +10,12 @@ const onSubmit = ([values]) => {
 
 const Demo = () => {
   return (
-    <div style={{ padding: 50 }}>
-      <Form initialFields={initialFields} onSubmit={onSubmit} />
+    <div style={{ padding: '10px 50px' }}>
+      <Form
+        formName="Ant Design Form"
+        initialFields={initialFields}
+        onSubmit={onSubmit}
+      />
     </div>
   );
 };

@@ -2,7 +2,11 @@ import * as React from 'react';
 import useFormFields, { FieldContainer } from '../../index';
 import Container from './Container';
 
-export default function Form({ initialFields, onSubmit }) {
+export default function Form({
+  formName = 'Test Form',
+  initialFields,
+  onSubmit,
+}) {
   const [fields, fns] = useFormFields({ initialFields, onSubmit });
   const { handleSubmit, onChange, onBlur, clearValues } = fns;
 
@@ -10,7 +14,7 @@ export default function Form({ initialFields, onSubmit }) {
     <section>
       <form onSubmit={evt => handleSubmit(evt)}>
         <fieldset>
-          <legend>Test Form</legend>
+          <legend>{formName}</legend>
           {fields.map(field => (
             <FieldContainer
               {...{

@@ -4,6 +4,9 @@ import { Input, Select, Checkbox, DatePicker } from 'antd';
 
 export default function fieldsMapper({ type, options, checked, ...props }) {
   switch (type) {
+    case 'textarea': {
+      return <Input.TextArea rows={4} {...props} />;
+    }
     case 'date': {
       return (
         <DatePicker
@@ -15,11 +18,12 @@ export default function fieldsMapper({ type, options, checked, ...props }) {
       return (
         <Checkbox
           defaultChecked={checked}
+          checked={props.value}
           onChange={evt =>
             props.onChange({ name: props.name, value: evt.target.checked })
           }
         >
-          Checkbox
+          {props.label}
         </Checkbox>
       );
     }
