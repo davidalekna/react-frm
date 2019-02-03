@@ -36,13 +36,13 @@ const extractFinalValues = (state: FormState): IFinalValues => {
 const defaultFieldValidation = (
   state: FormState,
   dispatch: Function,
-): [{ [key: string]: unknown } | void, FormState | void] => {
+): [{ [key: string]: unknown }, FormState] | void => {
   const stateWithErrors = [...state].map(errorPusher);
   dispatch({ type: '@@errors', payload: stateWithErrors });
   const errors = stateWithErrors.map(field => field.errors || []);
   // .flat() doesnt work for typescript...
   if (errors.concat.apply([], errors).filter(Boolean).length > 0) {
-    return [undefined, undefined];
+    return;
   } else {
     return [extractFinalValues(stateWithErrors), stateWithErrors];
   }
@@ -160,7 +160,10 @@ export default function useFormFields({
 
   const handleSubmit = (evt: InputEvent) => {
     evt.preventDefault();
-    onSubmit(validate(state, dispatch));
+    const values = validate(state, dispatch);
+    if (Array.isArray(values)) {
+      onSubmit(values);
+    }
   };
 
   const clearValues = () => {
