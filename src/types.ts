@@ -25,7 +25,7 @@ export interface IFinalValues {
 }
 
 export interface IDefaultProps {
-  initialFields: FormState;
+  initialFields?: FormState;
   validate?: Function;
   onSubmit?: Function;
 }

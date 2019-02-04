@@ -11,6 +11,8 @@ import {
   IDefaultProps,
 } from './types';
 
+const FrmContext = React.createContext({});
+
 const errorPusher = (field: IField) => {
   if (field.requirements) {
     field.errors = [];
@@ -107,7 +109,7 @@ const reducer = (initialState: FormState) => (
 };
 
 export default function useFormFields({
-  initialFields,
+  initialFields = [],
   validate = defaultFieldValidation,
   onSubmit = () => {},
 }: IDefaultProps): [FormState, { [key: string]: Function }] {
@@ -177,11 +179,50 @@ export default function useFormFields({
   return [state, { handleSubmit, onChange, onBlur, clearValues, addFields }];
 }
 
-// NOTE: could take onChange and onBlur from context
 export const FieldContainer = React.memo(
   ({ children, render, ...props }: any) => {
     if (render) return render(props);
     return children(props);
+  },
+  (
+    { value: prevValue, errors: prevErrors = [] },
+    { value: nextValue, errors: nextErrors = [] },
+  ) => isEqual([prevValue, prevErrors], [nextValue, nextErrors]),
+);
+
+// render props ->
+
+export const Form = ({ children, ...props }) => {
+  const [fields, fns] = useFormFields(props);
+  const ui =
+    typeof children === 'function' ? children({ fields, ...fns }) : children;
+  return (
+    <FrmContext.Provider value={{ fields, ...fns }}>{ui}</FrmContext.Provider>
+  );
+};
+
+export const Field = React.memo(
+  ({ children, render, ...props }: any) => {
+    const { onChange, onBlur }: any = React.useContext(FrmContext);
+    if (render) return render({ onChange, onBlur, ...props });
+    return children({ onChange, onBlur, ...props });
+  },
+  (
+    { value: prevValue, errors: prevErrors = [] },
+    { value: nextValue, errors: nextErrors = [] },
+  ) => isEqual([prevValue, prevErrors], [nextValue, nextErrors]),
+);
+
+export const FieldName = React.memo(
+  ({ children, render, name }: any) => {
+    const { fields, onChange, onBlur }: any = React.useContext(FrmContext);
+    const field = fields.find(f => f.name === name);
+    if (field) {
+      if (render) return render({ onChange, onBlur, ...field });
+      return children({ onChange, onBlur, ...field });
+    } else {
+      throw Error(`Field with name ${name} doesn\`t exist on your fields`);
+    }
   },
   (
     { value: prevValue, errors: prevErrors = [] },
