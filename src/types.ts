@@ -30,6 +30,11 @@ export interface IDefaultProps {
   onSubmit?: Function;
 }
 
+export interface IFrmContext {
+  fields: FormState;
+  [key: string]: any;
+}
+
 /**
  * reducer actions
  */

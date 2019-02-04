@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { storiesOf } from '@storybook/react';
 import { Wrapper } from './components/styles';
-import { Form, Field, FieldName } from '../index';
+import { Form, Fields, Field } from '../index';
 import ShowDocs from '../utils/ShowDocs';
 import initialFields from './fields/antd';
 import Container from './components/Container';
@@ -29,63 +29,77 @@ const Demo = () => {
   return (
     <Wrapper>
       <Form initialFields={initialFields} onSubmit={onSubmit}>
-        {({ handleSubmit, clearValues }) => (
-          <form onSubmit={handleSubmit}>
-            <FieldName
-              name="firstName"
-              render={({ errors, component: FComponent, ...props }) => {
-                return (
-                  <label>
-                    {props.label}
-                    <FComponent {...props} />
-                    <FieldErrors errors={errors} />
-                  </label>
-                );
-              }}
-            />
-            <FieldName
-              name="lastName"
-              render={({ errors, component: FComponent, ...props }) => {
-                return (
-                  <label>
-                    {props.label}
-                    <FComponent {...props} />
-                    <FieldErrors errors={errors} />
-                  </label>
-                );
-              }}
-            />
-            <FieldName
-              name="address.line_1"
-              render={({ errors, component: FComponent, ...props }) => {
-                return (
-                  <label>
-                    {props.label}
-                    <FComponent {...props} />
-                    <FieldErrors errors={errors} />
-                  </label>
-                );
-              }}
-            />
-            <FieldName
-              name="address.line_2"
-              render={({ errors, component: FComponent, ...props }) => {
-                return (
-                  <label>
-                    {props.label}
-                    <FComponent {...props} />
-                    <FieldErrors errors={errors} />
-                  </label>
-                );
-              }}
-            />
-            <br />
-            <button type="submit">Submit</button>
-            <button type="button" onClick={() => clearValues()}>
-              reset
-            </button>
-          </form>
-        )}
+        {({ handleSubmit, clearValues }) => {
+          return (
+            <form onSubmit={handleSubmit}>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <div style={{ display: 'flex', flexDirection: 'row' }}>
+                  <Field
+                    name="firstName"
+                    render={({ errors, component: FComponent, ...props }) => {
+                      console.log(`rendering ${props.label}`);
+                      return (
+                        <label>
+                          {props.label}
+                          <FComponent {...props} />
+                          <FieldErrors errors={errors} />
+                        </label>
+                      );
+                    }}
+                  />
+                  <Field
+                    name="lastName"
+                    render={({ errors, component: FComponent, ...props }) => {
+                      console.log(`rendering ${props.label}`);
+                      return (
+                        <label>
+                          {props.label}
+                          <FComponent {...props} />
+                          <FieldErrors errors={errors} />
+                        </label>
+                      );
+                    }}
+                  />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'row' }}>
+                  <Field
+                    name="address.line_1"
+                    render={({ errors, component: FComponent, ...props }) => {
+                      console.log(`rendering ${props.label}`);
+                      return (
+                        <label>
+                          {props.label}
+                          <FComponent {...props} />
+                          <FieldErrors errors={errors} />
+                        </label>
+                      );
+                    }}
+                  />
+                  <Field
+                    name="address.line_2"
+                    render={({ errors, component: FComponent, ...props }) => {
+                      console.log(`rendering ${props.label}`);
+                      return (
+                        <label>
+                          {props.label}
+                          <FComponent {...props} />
+                          <FieldErrors errors={errors} />
+                        </label>
+                      );
+                    }}
+                  />
+                </div>
+              </div>
+              <br />
+              <div>
+                <button type="submit">Submit</button>
+                <button type="button" onClick={() => clearValues()}>
+                  reset
+                </button>
+              </div>
+            </form>
+          );
+        }}
       </Form>
     </Wrapper>
   );

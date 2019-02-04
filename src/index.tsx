@@ -9,9 +9,17 @@ import {
   ICustomInput,
   IFinalValues,
   IDefaultProps,
+  IFrmContext,
 } from './types';
 
-const FrmContext = React.createContext({});
+const FrmContext = React.createContext<IFrmContext>({
+  fields: [],
+  handleSubmit: () => {},
+  onChange: () => {},
+  onBlur: () => {},
+  clearValues: () => {},
+  addFields: () => {},
+});
 
 const errorPusher = (field: IField) => {
   if (field.requirements) {
@@ -194,16 +202,20 @@ export const FieldContainer = React.memo(
 
 export const Form = ({ children, ...props }) => {
   const [fields, fns] = useFormFields(props);
-  const ui = typeof children === 'function' ? children(fns) : children;
+  const ui =
+    typeof children === 'function' ? children({ fields, ...fns }) : children;
+
   return (
     <FrmContext.Provider value={{ fields, ...fns }}>{ui}</FrmContext.Provider>
   );
 };
 
-export const Field = React.memo(
-  ({ children, render, ...props }: any) => {
-    const { onChange, onBlur }: any = React.useContext(FrmContext);
-    console.log(`rr ${props.label}`);
+export const Fields = React.memo(
+  ({ children, render, ...props }: IField) => {
+    const { onChange, onBlur } = React.useContext(FrmContext);
+    if (children && render) {
+      throw Error('children and render cannot be used together!');
+    }
     if (render) return render({ onChange, onBlur, ...props });
     return children({ onChange, onBlur, ...props });
   },
@@ -213,20 +225,28 @@ export const Field = React.memo(
   ) => isEqual([prevValue, prevErrors], [nextValue, nextErrors]),
 );
 
-const fieldRenderer = ({ render, ...props }: IField) => {
-  return React.useMemo(() => render(props), [props.value]);
-};
+export const Field = ({
+  children,
+  render,
+  name,
+}: {
+  children: Function;
+  render: Function;
+  name: string;
+}) => {
+  const { fields, onChange, onBlur } = React.useContext(FrmContext);
+  const field = fields.find((f: IField) => f.name === name);
 
-export const FieldName = ({ children, render, name }: any) => {
-  const { fields, onChange, onBlur }: any = React.useContext(FrmContext);
-  const field = fields.find(f => f.name === name);
+  if (children && render)
+    throw Error('children and render cannot be used together!');
   if (!field) {
-    throw Error(`Field with name ${name} doesn\`t exist on your fields`);
+    throw Error(`Field with name ${name} doesn\`t exist on initialFields`);
   }
-  return fieldRenderer({
-    render: render ? render : children,
-    onChange,
-    onBlur,
-    ...field,
-  });
+
+  return React.useMemo(() => {
+    if (render) {
+      return render({ onChange, onBlur, ...field });
+    }
+    return children({ onChange, onBlur, ...field });
+  }, [field.value]);
 };
