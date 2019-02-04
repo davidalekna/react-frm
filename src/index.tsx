@@ -192,18 +192,17 @@ export const FieldContainer = React.memo(
 
 // render props ->
 
-export const Form = React.memo(
-  ({ children, ...props }) => {
-    const state = useFormFields(props);
-    const ui = typeof children === 'function' ? children(state) : children;
-    return <FrmContext.Provider value={state}>{ui}</FrmContext.Provider>;
-  },
-  () => false,
-);
+export const Form = ({ children, ...props }) => {
+  const [fields, fns] = useFormFields(props);
+  const ui = typeof children === 'function' ? children(fns) : children;
+  return (
+    <FrmContext.Provider value={{ fields, ...fns }}>{ui}</FrmContext.Provider>
+  );
+};
 
 export const Field = React.memo(
   ({ children, render, ...props }: any) => {
-    const [, { onChange, onBlur }]: any = React.useContext(FrmContext);
+    const { onChange, onBlur }: any = React.useContext(FrmContext);
     console.log(`rr ${props.label}`);
     if (render) return render({ onChange, onBlur, ...props });
     return children({ onChange, onBlur, ...props });
@@ -214,33 +213,20 @@ export const Field = React.memo(
   ) => isEqual([prevValue, prevErrors], [nextValue, nextErrors]),
 );
 
-const FieldRenderer = React.memo(
-  ({ r, ...props }: IField) => {
-    return r(props);
-  },
-  (
-    { value: prevValue, errors: prevErrors = [] },
-    { value: nextValue, errors: nextErrors = [] },
-  ) => isEqual([prevValue, prevErrors], [nextValue, nextErrors]),
-);
+const fieldRenderer = ({ render, ...props }: IField) => {
+  return React.useMemo(() => render(props), [props.value]);
+};
 
-export const FieldName = React.memo(
-  ({ children, render, name }: any) => {
-    const { fields, onChange, onBlur }: any = React.useContext(FrmContext);
-    const field = fields.find(f => f.name === name);
-    if (!field) {
-      throw Error(`Field with name ${name} doesn\`t exist on your fields`);
-    }
-    return (
-      <FieldRenderer
-        {...{
-          r: render ? render : children,
-          onChange,
-          onBlur,
-          ...field,
-        }}
-      />
-    );
-  },
-  ({ name: prevName }, { name: nextName }) => prevName === nextName,
-);
+export const FieldName = ({ children, render, name }: any) => {
+  const { fields, onChange, onBlur }: any = React.useContext(FrmContext);
+  const field = fields.find(f => f.name === name);
+  if (!field) {
+    throw Error(`Field with name ${name} doesn\`t exist on your fields`);
+  }
+  return fieldRenderer({
+    render: render ? render : children,
+    onChange,
+    onBlur,
+    ...field,
+  });
+};

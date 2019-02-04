@@ -29,9 +29,9 @@ const Demo = () => {
   return (
     <Wrapper>
       <Form initialFields={initialFields} onSubmit={onSubmit}>
-        {([fields, { handleSubmit, clearValues }]) => (
+        {({ handleSubmit, clearValues }) => (
           <form onSubmit={handleSubmit}>
-            {/* <FieldName
+            <FieldName
               name="firstName"
               render={({ errors, component: FComponent, ...props }) => {
                 return (
@@ -78,16 +78,7 @@ const Demo = () => {
                   </label>
                 );
               }}
-            /> */}
-            {fields.map(field => (
-              <Field
-                {...{
-                  ...field,
-                  key: field.name,
-                  children: Container,
-                }}
-              />
-            ))}
+            />
             <br />
             <button type="submit">Submit</button>
             <button type="button" onClick={() => clearValues()}>
