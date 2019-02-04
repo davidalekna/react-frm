@@ -1,6 +1,6 @@
 {
   "name": "react-frm",
-  "version": "0.0.2-development",
+  "version": "0.0.3-development",
   "description": "React form hook. Renders inputs from an array of objects",
   "main": "lib/index.js",
   "files": [
