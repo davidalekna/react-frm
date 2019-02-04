@@ -50,8 +50,7 @@ const defaultFieldValidation = (
   const stateWithErrors = [...state].map(errorPusher);
   dispatch({ type: '@@errors', payload: stateWithErrors });
   const errors = stateWithErrors.map(field => field.errors || []);
-  // .flat() doesnt work for typescript...
-  if (errors.concat.apply([], errors).filter(Boolean).length > 0) {
+  if (errors.flat().filter(Boolean).length > 0) {
     return;
   } else {
     return [extractFinalValues(stateWithErrors), stateWithErrors];
