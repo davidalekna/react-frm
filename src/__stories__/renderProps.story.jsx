@@ -29,9 +29,9 @@ const Demo = () => {
   return (
     <Wrapper>
       <Form initialFields={initialFields} onSubmit={onSubmit}>
-        {({ fields, handleSubmit, clearValues }) => (
+        {([fields, { handleSubmit, clearValues }]) => (
           <form onSubmit={handleSubmit}>
-            <FieldName
+            {/* <FieldName
               name="firstName"
               render={({ errors, component: FComponent, ...props }) => {
                 return (
@@ -43,6 +43,42 @@ const Demo = () => {
                 );
               }}
             />
+            <FieldName
+              name="lastName"
+              render={({ errors, component: FComponent, ...props }) => {
+                return (
+                  <label>
+                    {props.label}
+                    <FComponent {...props} />
+                    <FieldErrors errors={errors} />
+                  </label>
+                );
+              }}
+            />
+            <FieldName
+              name="address.line_1"
+              render={({ errors, component: FComponent, ...props }) => {
+                return (
+                  <label>
+                    {props.label}
+                    <FComponent {...props} />
+                    <FieldErrors errors={errors} />
+                  </label>
+                );
+              }}
+            />
+            <FieldName
+              name="address.line_2"
+              render={({ errors, component: FComponent, ...props }) => {
+                return (
+                  <label>
+                    {props.label}
+                    <FComponent {...props} />
+                    <FieldErrors errors={errors} />
+                  </label>
+                );
+              }}
+            /> */}
             {fields.map(field => (
               <Field
                 {...{

@@ -192,20 +192,31 @@ export const FieldContainer = React.memo(
 
 // render props ->
 
-export const Form = ({ children, ...props }) => {
-  const [fields, fns] = useFormFields(props);
-  const ui =
-    typeof children === 'function' ? children({ fields, ...fns }) : children;
-  return (
-    <FrmContext.Provider value={{ fields, ...fns }}>{ui}</FrmContext.Provider>
-  );
-};
+export const Form = React.memo(
+  ({ children, ...props }) => {
+    const state = useFormFields(props);
+    const ui = typeof children === 'function' ? children(state) : children;
+    return <FrmContext.Provider value={state}>{ui}</FrmContext.Provider>;
+  },
+  () => false,
+);
 
 export const Field = React.memo(
   ({ children, render, ...props }: any) => {
-    const { onChange, onBlur }: any = React.useContext(FrmContext);
+    const [, { onChange, onBlur }]: any = React.useContext(FrmContext);
+    console.log(`rr ${props.label}`);
     if (render) return render({ onChange, onBlur, ...props });
     return children({ onChange, onBlur, ...props });
+  },
+  (
+    { value: prevValue, errors: prevErrors = [] },
+    { value: nextValue, errors: nextErrors = [] },
+  ) => isEqual([prevValue, prevErrors], [nextValue, nextErrors]),
+);
+
+const FieldRenderer = React.memo(
+  ({ r, ...props }: IField) => {
+    return r(props);
   },
   (
     { value: prevValue, errors: prevErrors = [] },
@@ -217,15 +228,19 @@ export const FieldName = React.memo(
   ({ children, render, name }: any) => {
     const { fields, onChange, onBlur }: any = React.useContext(FrmContext);
     const field = fields.find(f => f.name === name);
-    if (field) {
-      if (render) return render({ onChange, onBlur, ...field });
-      return children({ onChange, onBlur, ...field });
-    } else {
+    if (!field) {
       throw Error(`Field with name ${name} doesn\`t exist on your fields`);
     }
+    return (
+      <FieldRenderer
+        {...{
+          r: render ? render : children,
+          onChange,
+          onBlur,
+          ...field,
+        }}
+      />
+    );
   },
-  (
-    { value: prevValue, errors: prevErrors = [] },
-    { value: nextValue, errors: nextErrors = [] },
-  ) => isEqual([prevValue, prevErrors], [nextValue, nextErrors]),
+  ({ name: prevName }, { name: nextName }) => prevName === nextName,
 );
