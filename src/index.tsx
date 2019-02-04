@@ -248,5 +248,5 @@ export const Field = ({
       return render({ onChange, onBlur, ...field });
     }
     return children({ onChange, onBlur, ...field });
-  }, [field.value]);
+  }, [field.value, field.errors]);
 };

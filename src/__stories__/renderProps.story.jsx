@@ -5,6 +5,17 @@ import { Form, Fields, Field } from '../index';
 import ShowDocs from '../utils/ShowDocs';
 import initialFields from './fields/antd';
 import Container from './components/Container';
+import styled from 'styled-components';
+
+const Row = styled.div`
+  display: flex;
+  width: 100%;
+`;
+
+const Label = styled.label`
+  width: 100%;
+  padding: 0 5px;
+`;
 
 function FieldErrors({ errors = [] }: { errors: string[] }) {
   if (errors.length) {
@@ -32,71 +43,74 @@ const Demo = () => {
         {({ handleSubmit, clearValues }) => {
           return (
             <form onSubmit={handleSubmit}>
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <div style={{ display: 'flex', flexDirection: 'row' }}>
-                  <Field
-                    name="firstName"
-                    render={({ errors, component: FComponent, ...props }) => {
-                      console.log(`rendering ${props.label}`);
-                      return (
-                        <label>
-                          {props.label}
-                          <FComponent {...props} />
-                          <FieldErrors errors={errors} />
-                        </label>
-                      );
-                    }}
-                  />
-                  <Field
-                    name="lastName"
-                    render={({ errors, component: FComponent, ...props }) => {
-                      console.log(`rendering ${props.label}`);
-                      return (
-                        <label>
-                          {props.label}
-                          <FComponent {...props} />
-                          <FieldErrors errors={errors} />
-                        </label>
-                      );
-                    }}
-                  />
+              <fieldset>
+                <legend>Render Props</legend>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <Row>
+                    <Field
+                      name="firstName"
+                      render={({ errors, component: FComponent, ...props }) => {
+                        console.log(`rendering ${props.label}`);
+                        return (
+                          <Label>
+                            {props.label}
+                            <FComponent {...props} />
+                            <FieldErrors errors={errors} />
+                          </Label>
+                        );
+                      }}
+                    />
+                    <Field
+                      name="lastName"
+                      render={({ errors, component: FComponent, ...props }) => {
+                        console.log(`rendering ${props.label}`);
+                        return (
+                          <Label>
+                            {props.label}
+                            <FComponent {...props} />
+                            <FieldErrors errors={errors} />
+                          </Label>
+                        );
+                      }}
+                    />
+                  </Row>
+                  <Row>
+                    <Field
+                      name="address.line_1"
+                      render={({ errors, component: FComponent, ...props }) => {
+                        console.log(`rendering ${props.label}`);
+                        return (
+                          <Label>
+                            {props.label}
+                            <FComponent {...props} />
+                            <FieldErrors errors={errors} />
+                          </Label>
+                        );
+                      }}
+                    />
+                    <Field
+                      name="address.line_2"
+                      render={({ errors, component: FComponent, ...props }) => {
+                        console.log(`rendering ${props.label}`);
+                        return (
+                          <Label>
+                            {props.label}
+                            <FComponent {...props} />
+                            <FieldErrors errors={errors} />
+                          </Label>
+                        );
+                      }}
+                    />
+                  </Row>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'row' }}>
-                  <Field
-                    name="address.line_1"
-                    render={({ errors, component: FComponent, ...props }) => {
-                      console.log(`rendering ${props.label}`);
-                      return (
-                        <label>
-                          {props.label}
-                          <FComponent {...props} />
-                          <FieldErrors errors={errors} />
-                        </label>
-                      );
-                    }}
-                  />
-                  <Field
-                    name="address.line_2"
-                    render={({ errors, component: FComponent, ...props }) => {
-                      console.log(`rendering ${props.label}`);
-                      return (
-                        <label>
-                          {props.label}
-                          <FComponent {...props} />
-                          <FieldErrors errors={errors} />
-                        </label>
-                      );
-                    }}
-                  />
+                <br />
+                <div>
+                  <button type="submit">Submit</button>
+                  <button type="button" onClick={() => clearValues()}>
+                    reset
+                  </button>
                 </div>
-              </div>
-              <br />
-              <div>
-                <button type="submit">Submit</button>
-                <button type="button" onClick={() => clearValues()}>
-                  reset
-                </button>
-              </div>
+              </fieldset>
             </form>
           );
         }}
