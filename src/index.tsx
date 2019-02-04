@@ -210,6 +210,9 @@ export const Form = ({ children, ...props }) => {
   );
 };
 
+// TODO: FieldContainer and Fields could be one component
+// need to check if context exist or not and do
+// appropriate render
 export const Fields = React.memo(
   ({ children, render, ...props }: IField) => {
     const { onChange, onBlur } = React.useContext(FrmContext);
