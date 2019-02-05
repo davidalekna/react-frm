@@ -54,6 +54,7 @@ const Demo = () => {
                         meta,
                         ...props
                       }) => {
+                        console.log('FIELD', errors);
                         return (
                           <Label>
                             {props.label}

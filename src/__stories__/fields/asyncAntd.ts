@@ -2,7 +2,7 @@ import fieldsMapper from '../fieldsMappers/antd';
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-export const notEmpty = async value => {
+export const notEmptyAsync = async value => {
   const notAvailable = ['john', 'paul', 'george', 'ringo'];
   if (!value) return 'Required';
   await sleep(2000);
@@ -12,13 +12,17 @@ export const notEmpty = async value => {
   return undefined;
 };
 
+export const notEmpty = value => {
+  return value.length < 1 ? `Cannot be empty` : undefined;
+};
+
 export default [
   {
     label: 'Username',
     value: '',
     name: 'username',
     type: 'text',
-    requirements: [notEmpty],
+    requirements: [notEmptyAsync, notEmptyAsync],
   },
   {
     label: 'First Name',
@@ -26,6 +30,7 @@ export default [
     placeholder: 'Donald',
     name: 'firstName',
     type: 'text',
+    requirements: [notEmpty],
   },
   {
     label: 'Last Name',

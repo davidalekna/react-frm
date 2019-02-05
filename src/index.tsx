@@ -21,25 +21,23 @@ const FrmContext = React.createContext<IFrmContext>({
   addFields: () => {},
 });
 
-// TODO: async validation
-// const asyncErrorPusher = async (field: IField) => {
-//   if (Array.isArray(field.requirements)) {
-//     field.errors = [];
-//     await Promise.all(
-//       field.requirements.map(async fn => {
-//         const error = await fn(field.value);
-//         if (error && field.errors && !field.errors.includes(error)) {
-//           field.errors.push(error);
-//         }
-//       }),
-//     );
-//   }
-//   return field;
-// };
-
 const errorPusher = (field: IField) => {
   if (field.requirements) {
     field.errors = [];
+
+    // TODO: async validation
+    // return Promise.all(
+    //   field.requirements.map(fn =>
+    //     Promise.resolve(fn(field.value)).then(error => {
+    //       return error;
+    //     }),
+    //   ),
+    // ).then((errors: any) => {
+    //   console.log(errors);
+    //   field.errors = errors;
+    //   return field;
+    // });
+
     for (const fn of field.requirements) {
       const error = fn(field.value);
       if (error && !field.errors.includes(error)) {
