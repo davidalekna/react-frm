@@ -28,7 +28,7 @@ series [How to Contribute to an Open Source Project on GitHub][egghead]
 > pull requests from branches on your fork. To do this, run:
 >
 > ```
-> git remote add upstream https://github.com/paypal/downshift.git
+> git remote add upstream https://github.com/davidalekna/react-frm.git
 > git fetch upstream
 > git branch --set-upstream-to=upstream/master master
 > ```
@@ -38,20 +38,6 @@ series [How to Contribute to an Open Source Project on GitHub][egghead]
 > branch to use the upstream master branch whenever you run `git pull`. Then you
 > can make all of your pull request branches based on this `master` branch.
 > Whenever you want to update your version of `master`, do a regular `git pull`.
-
-## Add yourself as a contributor
-
-This project follows the [all contributors][all-contributors] specification. To
-add yourself to the table of contributors on the `README.md`, please use the
-automated script as part of your PR:
-
-```console
-npm run add-contributor
-```
-
-Follow the prompt and commit `.all-contributorsrc` and `README.md` in the PR. If
-you've already added yourself to the list and are making a new type of
-contribution, you can run it again and select the added contribution type.
 
 ## Committing and Pushing changes
 
