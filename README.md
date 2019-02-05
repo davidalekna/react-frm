@@ -13,3 +13,7 @@
 ## Usage
 
 This component provides hook and render props apis.
+
+## Examples
+
+[![Storybook](https://github.com/storybooks/press/blob/master/badges/storybook.svg)](https://davidalekna.github.io/react-frm)
