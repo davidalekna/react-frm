@@ -3,7 +3,7 @@ import { configure } from '@storybook/react';
 const req = require.context(
   '../src/__stories__/',
   true,
-  /.*\.(stories|story)\.(js|jsx|ts|tsx)?$/,
+  /.*\.(stories|story)\.(js|ts|tsx)?$/,
 );
 
 const loadStories = () => {

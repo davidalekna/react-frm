@@ -21,6 +21,22 @@ const FrmContext = React.createContext<IFrmContext>({
   addFields: () => {},
 });
 
+// TODO: async validation
+const asyncErrorPusher = async (field: IField) => {
+  if (Array.isArray(field.requirements)) {
+    field.errors = [];
+    await Promise.all(
+      field.requirements.map(async fn => {
+        const error = await fn(field.value);
+        if (error && field.errors && !field.errors.includes(error)) {
+          field.errors.push(error);
+        }
+      }),
+    );
+  }
+  return field;
+};
+
 const errorPusher = (field: IField) => {
   if (field.requirements) {
     field.errors = [];
@@ -125,7 +141,7 @@ export default function useFormFields({
   initialFields = [],
   validate = defaultFieldValidation,
   onSubmit = () => {},
-}: IDefaultProps): [FormState, { [key: string]: unknown }] {
+}: IDefaultProps): [FormState, { [key: string]: any }] {
   const [state, dispatch] = React.useReducer(
     reducer(initialFields),
     cloneDeep(initialFields),
@@ -258,8 +274,8 @@ export const Field = ({
   render,
   name,
 }: {
-  children: Function;
-  render: Function;
+  children?: Function;
+  render?: Function;
   name: string;
 }) => {
   const { fields, onChange, onBlur, onFocus } = React.useContext(FrmContext);
@@ -286,6 +302,8 @@ export const Field = ({
     if (render) {
       return render({ onChange, onBlur, onFocus, ...fieldProps });
     }
-    return children({ onChange, onBlur, onFocus, ...fieldProps });
+    if (children) {
+      return children({ onChange, onBlur, onFocus, ...fieldProps });
+    }
   }, [field.value, field.errors]);
 };

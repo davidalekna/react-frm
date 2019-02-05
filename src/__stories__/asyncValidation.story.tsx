@@ -1,10 +1,9 @@
 import * as React from 'react';
 import { storiesOf } from '@storybook/react';
 import { Wrapper } from './components/styles';
-import { Form, Fields, Field } from '../index';
+import { Form, Field } from '../index';
 import ShowDocs from '../utils/ShowDocs';
-import initialFields from './fields/antd';
-import Container from './components/Container';
+import initialFields from './fields/asyncAntd';
 import styled from 'styled-components';
 
 const Row = styled.div`
@@ -33,8 +32,8 @@ function FieldErrors({ errors = [] }: { errors: string[] }) {
 }
 
 const Demo = () => {
-  const onSubmit = ([values, original]) => {
-    console.log(original);
+  const onSubmit = ([values]) => {
+    console.log(values);
   };
 
   return (
@@ -42,10 +41,29 @@ const Demo = () => {
       <Form initialFields={initialFields} onSubmit={onSubmit}>
         {({ handleSubmit, clearValues, touched }) => {
           return (
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={evt => handleSubmit(evt)}>
               <fieldset>
-                <legend>Render Props</legend>
+                <legend>Async Validation</legend>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <Row>
+                    <Field
+                      name="username"
+                      render={({
+                        errors,
+                        component: FComponent,
+                        meta,
+                        ...props
+                      }) => {
+                        return (
+                          <Label>
+                            {props.label}
+                            <FComponent {...props} />
+                            <FieldErrors errors={errors} />
+                          </Label>
+                        );
+                      }}
+                    />
+                  </Row>
                   <Row>
                     <Field
                       name="firstName"
@@ -55,7 +73,6 @@ const Demo = () => {
                         meta,
                         ...props
                       }) => {
-                        console.log(`rendering ${props.label}`);
                         return (
                           <Label>
                             {props.label}
@@ -73,7 +90,6 @@ const Demo = () => {
                         meta,
                         ...props
                       }) => {
-                        console.log(`rendering ${props.label}`);
                         return (
                           <Label>
                             {props.label}
@@ -93,7 +109,6 @@ const Demo = () => {
                         meta,
                         ...props
                       }) => {
-                        console.log(`rendering ${props.label}`);
                         return (
                           <Label>
                             {props.label}
@@ -111,7 +126,6 @@ const Demo = () => {
                         meta,
                         ...props
                       }) => {
-                        console.log(`rendering ${props.label}`);
                         return (
                           <Label>
                             {props.label}
@@ -141,6 +155,6 @@ const Demo = () => {
   );
 };
 
-storiesOf('render props', module)
+storiesOf('async validation', module)
   .add('Docs', () => <ShowDocs md={require('../../docs/construct.md')} />)
   .add('Demo', () => <Demo />);

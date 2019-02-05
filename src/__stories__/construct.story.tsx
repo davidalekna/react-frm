@@ -32,7 +32,7 @@ const Demo = () => {
             add other fields
           </button>
         </div>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={evt => handleSubmit(evt)}>
           {Object.keys(categories).map((category, key) => (
             <fieldset key={key}>
               <legend>{category}</legend>
