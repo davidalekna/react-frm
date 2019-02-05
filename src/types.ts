@@ -52,6 +52,11 @@ class FieldError implements IAction {
   constructor(public payload: string) {}
 }
 
+class FieldTouched implements IAction {
+  readonly type = '@@fieldTouched';
+  constructor(public payload: string) {}
+}
+
 class AddFields implements IAction {
   readonly type = '@@addFields';
   constructor(public payload: FormState) {}
@@ -66,4 +71,10 @@ class Reset implements IAction {
   readonly type = '@@reset';
 }
 
-export type FormActions = FieldUpdate | FieldError | AddFields | Errors | Reset;
+export type FormActions =
+  | FieldUpdate
+  | FieldError
+  | FieldTouched
+  | AddFields
+  | Errors
+  | Reset;

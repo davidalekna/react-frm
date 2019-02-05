@@ -33,14 +33,14 @@ function FieldErrors({ errors = [] }: { errors: string[] }) {
 }
 
 const Demo = () => {
-  const onSubmit = ([values]) => {
-    console.log(values);
+  const onSubmit = ([values, original]) => {
+    console.log(original);
   };
 
   return (
     <Wrapper>
       <Form initialFields={initialFields} onSubmit={onSubmit}>
-        {({ handleSubmit, clearValues }) => {
+        {({ handleSubmit, clearValues, touched }) => {
           return (
             <form onSubmit={handleSubmit}>
               <fieldset>
@@ -49,7 +49,12 @@ const Demo = () => {
                   <Row>
                     <Field
                       name="firstName"
-                      render={({ errors, component: FComponent, ...props }) => {
+                      render={({
+                        errors,
+                        component: FComponent,
+                        meta,
+                        ...props
+                      }) => {
                         console.log(`rendering ${props.label}`);
                         return (
                           <Label>
@@ -62,7 +67,12 @@ const Demo = () => {
                     />
                     <Field
                       name="lastName"
-                      render={({ errors, component: FComponent, ...props }) => {
+                      render={({
+                        errors,
+                        component: FComponent,
+                        meta,
+                        ...props
+                      }) => {
                         console.log(`rendering ${props.label}`);
                         return (
                           <Label>
@@ -77,7 +87,12 @@ const Demo = () => {
                   <Row>
                     <Field
                       name="address.line_1"
-                      render={({ errors, component: FComponent, ...props }) => {
+                      render={({
+                        errors,
+                        component: FComponent,
+                        meta,
+                        ...props
+                      }) => {
                         console.log(`rendering ${props.label}`);
                         return (
                           <Label>
@@ -90,7 +105,12 @@ const Demo = () => {
                     />
                     <Field
                       name="address.line_2"
-                      render={({ errors, component: FComponent, ...props }) => {
+                      render={({
+                        errors,
+                        component: FComponent,
+                        meta,
+                        ...props
+                      }) => {
                         console.log(`rendering ${props.label}`);
                         return (
                           <Label>
@@ -105,7 +125,9 @@ const Demo = () => {
                 </div>
                 <br />
                 <div>
-                  <button type="submit">Submit</button>
+                  <button type="submit" disabled={!touched}>
+                    Submit
+                  </button>
                   <button type="button" onClick={() => clearValues()}>
                     reset
                   </button>

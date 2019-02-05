@@ -97,7 +97,13 @@ const reducer = (initialState: FormState) => (
     case '@@fieldError': {
       const { item, index } = findByName(action.payload);
       const updatedItem = errorPusher({ ...item });
+      // should add error under meta?
       state[index] = Object.assign(item, updatedItem);
+      return cloneDeep(state);
+    }
+    case '@@fieldTouched': {
+      const { item, index } = findByName(action.payload);
+      state[index] = merge(item, { meta: { touched: true } });
       return cloneDeep(state);
     }
     case '@@addFields': {
@@ -119,7 +125,7 @@ export default function useFormFields({
   initialFields = [],
   validate = defaultFieldValidation,
   onSubmit = () => {},
-}: IDefaultProps): [FormState, { [key: string]: Function }] {
+}: IDefaultProps): [FormState, { [key: string]: unknown }] {
   const [state, dispatch] = React.useReducer(
     reducer(initialFields),
     cloneDeep(initialFields),
@@ -167,6 +173,18 @@ export default function useFormFields({
     }
   };
 
+  const onFocus = (input: InputEvent | ICustomInput) => {
+    if ('target' in input) {
+      const { target } = input;
+      if (!target.name) throw Error('no input name');
+      dispatch({ type: '@@fieldTouched', payload: target.name });
+    } else {
+      const { name } = input;
+      if (!name) throw Error('no input name');
+      dispatch({ type: '@@fieldTouched', payload: name });
+    }
+  };
+
   const handleSubmit = (evt: InputEvent) => {
     evt.preventDefault();
     const values = validate(state, dispatch);
@@ -179,26 +197,30 @@ export default function useFormFields({
     dispatch({ type: '@@reset' });
   };
 
+  const touched = () =>
+    state.find(f => f.meta && f.meta.touched) ? true : false;
+
   const addFields = (fields: FormState) => {
     dispatch({ type: '@@addFields', payload: fields });
   };
 
-  return [state, { handleSubmit, onChange, onBlur, clearValues, addFields }];
+  return [
+    state,
+    {
+      handleSubmit,
+      onChange,
+      onBlur,
+      onFocus,
+      clearValues,
+      touched: touched(),
+      addFields,
+    },
+  ];
 }
 
-export const FieldContainer = React.memo(
-  ({ children, render, ...props }: any) => {
-    if (render) return render(props);
-    return children(props);
-  },
-  (
-    { value: prevValue, errors: prevErrors = [] },
-    { value: nextValue, errors: nextErrors = [] },
-  ) => isEqual([prevValue, prevErrors], [nextValue, nextErrors]),
-);
-
-// render props ->
-
+/**
+ * render props option
+ */
 export const Form = ({ children, ...props }) => {
   const [fields, fns] = useFormFields(props);
   const ui =
@@ -209,17 +231,18 @@ export const Form = ({ children, ...props }) => {
   );
 };
 
-// TODO: FieldContainer and Fields could be one component
-// need to check if context exist or not and do
-// appropriate render
-export const Fields = React.memo(
-  ({ children, render, ...props }: IField) => {
-    const { onChange, onBlur } = React.useContext(FrmContext);
+/**
+ * Useful when rendering fields from a map. Works with and without context.
+ */
+export const FieldContainer = React.memo(
+  // remove unused props from the dom
+  ({ children, render, requirements, ...props }: IField) => {
+    const { onChange, onBlur, onFocus } = React.useContext(FrmContext);
     if (children && render) {
       throw Error('children and render cannot be used together!');
     }
-    if (render) return render({ onChange, onBlur, ...props });
-    return children({ onChange, onBlur, ...props });
+    if (render) return render({ onChange, onBlur, onFocus, ...props });
+    return children({ onChange, onBlur, onFocus, ...props });
   },
   (
     { value: prevValue, errors: prevErrors = [] },
@@ -227,6 +250,9 @@ export const Fields = React.memo(
   ) => isEqual([prevValue, prevErrors], [nextValue, nextErrors]),
 );
 
+/**
+ * If form has to have some shape, this component will select field by name
+ */
 export const Field = ({
   children,
   render,
@@ -236,19 +262,30 @@ export const Field = ({
   render: Function;
   name: string;
 }) => {
-  const { fields, onChange, onBlur } = React.useContext(FrmContext);
+  const { fields, onChange, onBlur, onFocus } = React.useContext(FrmContext);
   const field = fields.find((f: IField) => f.name === name);
 
   if (children && render)
     throw Error('children and render cannot be used together!');
   if (!field) {
-    throw Error(`Field with name ${name} doesn\`t exist on initialFields`);
+    const hasMatch = fields.find(f => f.name.includes(name));
+    if (hasMatch) {
+      throw Error(
+        `Field with name ${name} doesn\`t exist, did you mean ${
+          hasMatch.name
+        }?`,
+      );
+    } else {
+      throw Error(`Field with name ${name} doesn\`t exist.`);
+    }
   }
 
   return React.useMemo(() => {
+    // remove unused props from the dom
+    const { requirements, ...fieldProps } = field;
     if (render) {
-      return render({ onChange, onBlur, ...field });
+      return render({ onChange, onBlur, onFocus, ...fieldProps });
     }
-    return children({ onChange, onBlur, ...field });
+    return children({ onChange, onBlur, onFocus, ...fieldProps });
   }, [field.value, field.errors]);
 };
