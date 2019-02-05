@@ -1,9 +1,9 @@
 import * as React from 'react';
-import 'antd/dist/antd.css';
-// import 'antd/lib/input/style/css';
-// import 'antd/lib/select/style/css';
-// import 'antd/lib/checkbox/style/css';
-// import 'antd/lib/date-picker/style/css';
+// import 'antd/dist/antd.css';
+import 'antd/lib/date-picker/style/css';
+import 'antd/lib/input/style/css';
+import 'antd/lib/select/style/css';
+import 'antd/lib/checkbox/style/css';
 import { Input, Select, Checkbox, DatePicker } from 'antd';
 
 export default function fieldsMapper({ type, options, checked, ...props }) {
