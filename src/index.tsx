@@ -48,7 +48,7 @@ export const errorPusher = (field: IField) => {
   return field;
 };
 
-const extractFinalValues = (state: FormState): IFinalValues => {
+export const extractFinalValues = (state: FormState): IFinalValues => {
   return state.reduce((acc, field) => {
     if ((field.value && !isBoolean(field.value)) || isBoolean(field.value)) {
       return merge(acc, createObject({ [field.name]: field.value }));
@@ -71,7 +71,7 @@ const defaultFieldValidation = (
   }
 };
 
-const getFromStateByName = (state: FormState) => (itemName: string) => {
+export const getFromStateByName = (state: FormState) => (itemName: string) => {
   let itemIndex: number = 0;
   const item = state.find(({ name }, index) => {
     itemIndex = index;
@@ -86,7 +86,9 @@ const getFromStateByName = (state: FormState) => (itemName: string) => {
   };
 };
 
-const findDuplicates = (state: FormState) => (stateToMerge: FormState) => {
+export const findDuplicates = (state: FormState) => (
+  stateToMerge: FormState,
+) => {
   return stateToMerge.filter(field => {
     const duplicate = state.map(f => f.name).includes(field.name);
     if (duplicate) {
