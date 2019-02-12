@@ -60,6 +60,11 @@ test('extractFinalValues should extract values into an object key pairs', () => 
       type: 'text',
     },
     {
+      name: 'selection',
+      value: true,
+      type: 'checkbox',
+    },
+    {
       name: 'address.line_1',
       value: 'final value 3',
       type: 'text',
@@ -67,6 +72,11 @@ test('extractFinalValues should extract values into an object key pairs', () => 
     {
       name: 'address.line_2',
       value: 'final value 4',
+      type: 'text',
+    },
+    {
+      name: 'address.county',
+      value: '',
       type: 'text',
     },
     {
@@ -79,6 +89,7 @@ test('extractFinalValues should extract values into an object key pairs', () => 
   expect(extractFinalValues(fields)).toEqual({
     firstName: 'final value 1',
     lastName: 'final value 2',
+    selection: true,
     address: {
       line_1: 'final value 3',
       line_2: 'final value 4',
@@ -119,6 +130,9 @@ test('getFromStateByName should return field object from array and it`s index', 
     index: 0,
     item: state[0],
   });
+  expect(() => {
+    getFromStateByName(state)('nameDoesNotExist');
+  }).toThrow();
 });
 
 test('findDuplicates should return array without duplicates', () => {

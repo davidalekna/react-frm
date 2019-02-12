@@ -57,7 +57,7 @@ export const extractFinalValues = (state: FormState): IFinalValues => {
   }, {});
 };
 
-const defaultFieldValidation = (
+export const defaultFieldValidation = (
   state: FormState,
   dispatch: Function,
 ): [{ [key: string]: unknown }, FormState] | void => {
