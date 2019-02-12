@@ -1,4 +1,4 @@
-export const createObject = (obj: { [key: string]: unknown }) => {
+export const createObject = (obj: { [key: string]: unknown } | void) => {
   if (!obj) return {};
   const isPlainObject = obj => !!obj && obj.constructor === {}.constructor;
   const getNestedObject = obj =>

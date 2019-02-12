@@ -10,6 +10,7 @@ test('should detect boolean value', () => {
 });
 
 test('should create an object from string', () => {
+  expect(createObject()).toEqual({});
   expect(
     createObject({ ['a.d.d.r.e.s.s.line_1']: 'some value' }),
   ).toMatchObject({
