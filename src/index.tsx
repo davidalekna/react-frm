@@ -21,7 +21,7 @@ const FrmContext = React.createContext<IFrmContext>({
   addFields: () => {},
 });
 
-const errorPusher = (field: IField) => {
+export const errorPusher = (field: IField) => {
   if (field.requirements) {
     field.errors = [];
 
