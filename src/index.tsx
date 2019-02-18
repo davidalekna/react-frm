@@ -25,28 +25,16 @@ export const errorPusher = async (field: IField) => {
   if (field.requirements) {
     field.errors = [];
 
-    const asyncFns = field.requirements.filter(fn =>
-      fn.toString().includes('async'),
-    );
-    const syncFns = field.requirements.filter(
-      fn => !fn.toString().includes('async'),
-    );
+    // TODO: use observable and keep a ref to cancel on input change
 
     await Promise.all(
-      asyncFns.map(async fn => {
+      field.requirements.map(async fn => {
         const error = await fn(field.value);
         if (error && field.errors && !field.errors.includes(error)) {
           field.errors.push(error);
         }
       }),
     );
-
-    for (const fn of syncFns) {
-      const error = fn(field.value);
-      if (error && !field.errors.includes(error)) {
-        field.errors.push(error);
-      }
-    }
 
     field.meta.loading = false;
   }
@@ -112,7 +100,7 @@ const reducer = (initialState: FormState) => (
   switch (action.type) {
     case '@@fieldUpdate': {
       const { item, index } = findByName(action.payload.name);
-      state[index] = Object.assign(item, action.payload);
+      state[index] = Object.assign(item, { ...action.payload, errors: [] });
       return cloneDeep(state);
     }
     case '@@fieldError': {
@@ -125,7 +113,7 @@ const reducer = (initialState: FormState) => (
       const { name, loading } = action.payload;
       const { item, index } = findByName(name);
       state[index] = merge(item, {
-        meta: { touched: true, loading: loading || undefined },
+        meta: { touched: true, loading },
       });
       return cloneDeep(state);
     }
@@ -149,9 +137,16 @@ export default function useFormFields({
   validate = defaultFieldValidation,
   onSubmit = () => {},
 }: IDefaultProps): [FormState, { [key: string]: any }] {
+  const fields: FormState = cloneDeep(
+    initialFields.map((fld: IField) => ({
+      ...fld,
+      meta: { touched: false, loading: false },
+    })),
+  );
+
   const [state, dispatch] = React.useReducer(
-    reducer(initialFields),
-    cloneDeep(initialFields.map(field => ({ ...field, meta: {} }))),
+    reducer(fields),
+    cloneDeep(fields),
   );
 
   const onChangeTarget = ({ target }: InputEvent) => {
@@ -184,34 +179,29 @@ export default function useFormFields({
     }
   };
 
+  const onBlurAction = async (name: string, findByName: Function) => {
+    if (!name) throw Error('no input name');
+    const { index, item } = findByName(name);
+    const updatedItem = await errorPusher({ ...item });
+    dispatch({
+      type: '@@fieldError',
+      payload: { index, item: updatedItem },
+    });
+  };
+
   const onBlur = async (input: InputEvent | ICustomInput) => {
     const findByName = getFromStateByName(state);
     if ('target' in input) {
       const { target } = input;
-      if (!target.name) throw Error('no input name');
-      const { index, item } = findByName(target.name);
-      dispatch({
-        type: '@@fieldTouched',
-        payload: { name: item.name, loading: true },
-      });
-      const updatedItem = await errorPusher({ ...item });
-      dispatch({
-        type: '@@fieldError',
-        payload: { index, item: updatedItem },
-      });
+      await onBlurAction(target.name, findByName);
     } else {
       const { name } = input;
-      if (!name) throw Error('no input name');
-      const { item, index } = findByName(name);
-      const updatedItem = await errorPusher({ ...item });
-      dispatch({
-        type: '@@fieldError',
-        payload: { index, item: updatedItem },
-      });
+      await onBlurAction(name, findByName);
     }
   };
 
   const onFocus = (input: InputEvent | ICustomInput) => {
+    // todo: cancel Promise
     if ('target' in input) {
       const { target } = input;
       if (!target.name) throw Error('no input name');
@@ -224,6 +214,7 @@ export default function useFormFields({
   };
 
   const handleSubmit = async (evt: InputEvent) => {
+    // todo: cancel Promise
     evt.preventDefault();
     const values = await validate(state, dispatch);
     if (Array.isArray(values)) {
@@ -236,7 +227,9 @@ export default function useFormFields({
   };
 
   const touched = () =>
-    state.find(f => f.meta && f.meta.touched) ? true : false;
+    state.find(({ meta }: { meta: any }) => meta && meta.touched)
+      ? true
+      : false;
 
   const addFields = (fields: FormState) => {
     dispatch({ type: '@@addFields', payload: fields });

@@ -54,7 +54,6 @@ const Demo = () => {
                         meta,
                         ...props
                       }) => {
-                        console.log(meta);
                         return (
                           <Label>
                             {props.label}

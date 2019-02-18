@@ -2,7 +2,10 @@ import fieldsMapper from '../fieldsMappers/antd';
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-export const usernameTaken = async value => {
+export const usernameAvailable = async value => {
+  if (!value) {
+    return 'Required';
+  }
   await sleep(2500);
   const notAvailable = ['john', 'paul', 'george', 'ringo'];
   if (notAvailable.includes(value.toLowerCase())) {
@@ -21,7 +24,7 @@ export default [
     value: '',
     name: 'username',
     type: 'text',
-    requirements: [usernameTaken, notEmpty],
+    requirements: [usernameAvailable],
   },
   {
     label: 'First Name',

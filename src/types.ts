@@ -4,6 +4,10 @@ export interface IField {
   name: string;
   value: any;
   type: string;
+  meta: {
+    touched?: boolean;
+    loading?: boolean;
+  };
   errors?: Array<string>;
   label?: string;
   placeholder?: string;
@@ -25,7 +29,7 @@ export interface IFinalValues {
 }
 
 export interface IDefaultProps {
-  initialFields?: FormState;
+  initialFields?: any[];
   validate?: Function;
   onSubmit?: Function;
 }
