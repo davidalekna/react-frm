@@ -49,12 +49,12 @@ class FieldUpdate implements IAction {
 
 class FieldError implements IAction {
   readonly type = '@@fieldError';
-  constructor(public payload: string) {}
+  constructor(public payload: { index: number; item: IField }) {}
 }
 
 class FieldTouched implements IAction {
   readonly type = '@@fieldTouched';
-  constructor(public payload: string) {}
+  constructor(public payload: { name: string; loading?: boolean }) {}
 }
 
 class AddFields implements IAction {

@@ -21,29 +21,34 @@ const FrmContext = React.createContext<IFrmContext>({
   addFields: () => {},
 });
 
-export const errorPusher = (field: IField) => {
+export const errorPusher = async (field: IField) => {
   if (field.requirements) {
     field.errors = [];
 
-    // TODO: async validation
-    // return Promise.all(
-    //   field.requirements.map(fn =>
-    //     Promise.resolve(fn(field.value)).then(error => {
-    //       return error;
-    //     }),
-    //   ),
-    // ).then((errors: any) => {
-    //   console.log(errors);
-    //   field.errors = errors;
-    //   return field;
-    // });
+    const asyncFns = field.requirements.filter(fn =>
+      fn.toString().includes('async'),
+    );
+    const syncFns = field.requirements.filter(
+      fn => !fn.toString().includes('async'),
+    );
 
-    for (const fn of field.requirements) {
+    await Promise.all(
+      asyncFns.map(async fn => {
+        const error = await fn(field.value);
+        if (error && field.errors && !field.errors.includes(error)) {
+          field.errors.push(error);
+        }
+      }),
+    );
+
+    for (const fn of syncFns) {
       const error = fn(field.value);
       if (error && !field.errors.includes(error)) {
         field.errors.push(error);
       }
     }
+
+    field.meta.loading = false;
   }
   return field;
 };
@@ -57,11 +62,11 @@ export const extractFinalValues = (state: FormState): IFinalValues => {
   }, {});
 };
 
-export const defaultFieldValidation = (
+export const defaultFieldValidation = async (
   state: FormState,
   dispatch: Function,
-): [{ [key: string]: unknown }, FormState] | void => {
-  const stateWithErrors = [...state].map(errorPusher);
+): Promise<[IFinalValues, FormState] | void> => {
+  const stateWithErrors = await Promise.all([...state].map(errorPusher));
   dispatch({ type: '@@errors', payload: stateWithErrors });
   const errors = stateWithErrors.map(field => field.errors || []);
   if (errors.flat().filter(Boolean).length > 0) {
@@ -111,15 +116,17 @@ const reducer = (initialState: FormState) => (
       return cloneDeep(state);
     }
     case '@@fieldError': {
-      const { item, index } = findByName(action.payload);
-      const updatedItem = errorPusher({ ...item });
       // should add error under meta?
-      state[index] = Object.assign(item, updatedItem);
+      const { index, item } = action.payload;
+      state[index] = item;
       return cloneDeep(state);
     }
     case '@@fieldTouched': {
-      const { item, index } = findByName(action.payload);
-      state[index] = merge(item, { meta: { touched: true } });
+      const { name, loading } = action.payload;
+      const { item, index } = findByName(name);
+      state[index] = merge(item, {
+        meta: { touched: true, loading: loading || undefined },
+      });
       return cloneDeep(state);
     }
     case '@@addFields': {
@@ -144,7 +151,7 @@ export default function useFormFields({
 }: IDefaultProps): [FormState, { [key: string]: any }] {
   const [state, dispatch] = React.useReducer(
     reducer(initialFields),
-    cloneDeep(initialFields),
+    cloneDeep(initialFields.map(field => ({ ...field, meta: {} }))),
   );
 
   const onChangeTarget = ({ target }: InputEvent) => {
@@ -177,15 +184,30 @@ export default function useFormFields({
     }
   };
 
-  const onBlur = (input: InputEvent | ICustomInput) => {
+  const onBlur = async (input: InputEvent | ICustomInput) => {
+    const findByName = getFromStateByName(state);
     if ('target' in input) {
       const { target } = input;
       if (!target.name) throw Error('no input name');
-      dispatch({ type: '@@fieldError', payload: target.name });
+      const { index, item } = findByName(target.name);
+      dispatch({
+        type: '@@fieldTouched',
+        payload: { name: item.name, loading: true },
+      });
+      const updatedItem = await errorPusher({ ...item });
+      dispatch({
+        type: '@@fieldError',
+        payload: { index, item: updatedItem },
+      });
     } else {
       const { name } = input;
       if (!name) throw Error('no input name');
-      dispatch({ type: '@@fieldError', payload: name });
+      const { item, index } = findByName(name);
+      const updatedItem = await errorPusher({ ...item });
+      dispatch({
+        type: '@@fieldError',
+        payload: { index, item: updatedItem },
+      });
     }
   };
 
@@ -193,17 +215,17 @@ export default function useFormFields({
     if ('target' in input) {
       const { target } = input;
       if (!target.name) throw Error('no input name');
-      dispatch({ type: '@@fieldTouched', payload: target.name });
+      dispatch({ type: '@@fieldTouched', payload: { name: target.name } });
     } else {
       const { name } = input;
       if (!name) throw Error('no input name');
-      dispatch({ type: '@@fieldTouched', payload: name });
+      dispatch({ type: '@@fieldTouched', payload: { name } });
     }
   };
 
-  const handleSubmit = (evt: InputEvent) => {
+  const handleSubmit = async (evt: InputEvent) => {
     evt.preventDefault();
-    const values = validate(state, dispatch);
+    const values = await validate(state, dispatch);
     if (Array.isArray(values)) {
       onSubmit(values);
     }

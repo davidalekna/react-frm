@@ -54,11 +54,17 @@ const Demo = () => {
                         meta,
                         ...props
                       }) => {
-                        console.log('FIELD', errors);
+                        console.log(meta);
                         return (
                           <Label>
                             {props.label}
-                            <FComponent {...props} />
+                            <FComponent
+                              {...{
+                                addonAfter:
+                                  meta && meta.loading ? 'loading' : null,
+                                ...props,
+                              }}
+                            />
                             <FieldErrors errors={errors} />
                           </Label>
                         );
