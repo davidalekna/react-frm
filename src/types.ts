@@ -8,7 +8,7 @@ export interface IField {
     touched?: boolean;
     loading?: boolean;
   };
-  errors?: Array<string>;
+  errors?: any[];
   label?: string;
   placeholder?: string;
   requirements?: Requirement[];

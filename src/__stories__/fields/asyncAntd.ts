@@ -18,6 +18,10 @@ export const notEmpty = value => {
   return value.length < 1 ? `Cannot be empty` : undefined;
 };
 
+export const mustContainLetter = (letter: string) => (value: string) => {
+  return !value.includes(letter) ? `Must contain letter ${letter}` : undefined;
+};
+
 export default [
   {
     label: 'Username',
@@ -32,7 +36,7 @@ export default [
     placeholder: 'Donald',
     name: 'firstName',
     type: 'text',
-    requirements: [notEmpty],
+    requirements: [notEmpty, mustContainLetter('e')],
   },
   {
     label: 'Last Name',
@@ -40,6 +44,7 @@ export default [
     placeholder: 'Trump',
     name: 'lastName',
     type: 'text',
+    requirements: [mustContainLetter('a')],
   },
   {
     label: 'Date of Birth',

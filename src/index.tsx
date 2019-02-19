@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { forkJoin, from } from 'rxjs';
 import { isEqual, merge, cloneDeep } from 'lodash';
 import { createObject, isBoolean } from './utils/helpers';
 import {
@@ -27,14 +28,27 @@ export const errorPusher = async (field: IField) => {
 
     // TODO: use observable and keep a ref to cancel on input change
 
-    await Promise.all(
-      field.requirements.map(async fn => {
-        const error = await fn(field.value);
-        if (error && field.errors && !field.errors.includes(error)) {
-          field.errors.push(error);
+    const subscription = forkJoin(
+      field.requirements.map(fn => from(Promise.resolve(fn(field.value)))),
+    ).subscribe({
+      next: errors => {
+        console.log(errors);
+        if (errors && field.errors) {
+          field.errors.push(errors);
         }
-      }),
-    );
+      },
+    });
+
+    // subscription.unsubscribe();
+
+    // await Promise.all(
+    //   field.requirements.map(async fn => {
+    //     const error = await fn(field.value);
+    //     if (error && field.errors && !field.errors.includes(error)) {
+    //       field.errors.push(error);
+    //     }
+    //   }),
+    // );
 
     field.meta.loading = false;
   }
@@ -249,6 +263,16 @@ export default function useFormFields({
   ];
 }
 
+export function useFormContext() {
+  const context = React.useContext(FrmContext);
+  if (!context) {
+    throw new Error(
+      `Form compound components cannot be rendered outside the Form component`,
+    );
+  }
+  return context;
+}
+
 /**
  * render props option
  */
@@ -268,7 +292,7 @@ export const Form = ({ children, ...props }) => {
 export const FieldContainer = React.memo(
   // remove unused props from the dom
   ({ children, render, requirements, ...props }: IField) => {
-    const { onChange, onBlur, onFocus } = React.useContext(FrmContext);
+    const { onChange, onBlur, onFocus } = useFormContext();
     if (children && render) {
       throw Error('children and render cannot be used together!');
     }
@@ -293,7 +317,7 @@ export const Field = ({
   render?: Function;
   name: string;
 }) => {
-  const { fields, onChange, onBlur, onFocus } = React.useContext(FrmContext);
+  const { fields, onChange, onBlur, onFocus } = useFormContext();
   const field = fields.find((f: IField) => f.name === name);
 
   if (children && render)
