@@ -28,27 +28,27 @@ export const errorPusher = async (field: IField) => {
 
     // TODO: use observable and keep a ref to cancel on input change
 
-    const subscription = forkJoin(
-      field.requirements.map(fn => from(Promise.resolve(fn(field.value)))),
-    ).subscribe({
-      next: errors => {
-        console.log(errors);
-        if (errors && field.errors) {
-          field.errors.push(errors);
-        }
-      },
-    });
+    // const subscription = forkJoin(
+    //   field.requirements.map(fn => from(Promise.resolve(fn(field.value)))),
+    // ).subscribe({
+    //   next: errors => {
+    //     console.log(errors);
+    //     if (errors && field.errors) {
+    //       field.errors.push(errors);
+    //     }
+    //   },
+    // });
 
     // subscription.unsubscribe();
 
-    // await Promise.all(
-    //   field.requirements.map(async fn => {
-    //     const error = await fn(field.value);
-    //     if (error && field.errors && !field.errors.includes(error)) {
-    //       field.errors.push(error);
-    //     }
-    //   }),
-    // );
+    await Promise.all(
+      field.requirements.map(async fn => {
+        const error = await fn(field.value);
+        if (error && field.errors && !field.errors.includes(error)) {
+          field.errors.push(error);
+        }
+      }),
+    );
 
     field.meta.loading = false;
   }
