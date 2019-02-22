@@ -22,33 +22,33 @@ const FrmContext = React.createContext<IFrmContext>({
   addFields: () => {},
 });
 
-export const errorPusher = async (field: IField) => {
+export const errorPusher = (field: IField) => {
   if (field.requirements) {
     field.errors = [];
 
     // TODO: use observable and keep a ref to cancel on input change
 
-    // const subscription = forkJoin(
-    //   field.requirements.map(fn => from(Promise.resolve(fn(field.value)))),
-    // ).subscribe({
-    //   next: errors => {
-    //     console.log(errors);
-    //     if (errors && field.errors) {
-    //       field.errors.push(errors);
-    //     }
-    //   },
-    // });
+    const subscription = forkJoin(
+      field.requirements.map(fn => from(Promise.resolve(fn(field.value)))),
+    ).subscribe({
+      next: errors => {
+        console.log(errors);
+        if (errors && field.errors) {
+          field.errors.push(errors);
+        }
+      },
+    });
 
     // subscription.unsubscribe();
 
-    await Promise.all(
-      field.requirements.map(async fn => {
-        const error = await fn(field.value);
-        if (error && field.errors && !field.errors.includes(error)) {
-          field.errors.push(error);
-        }
-      }),
-    );
+    // await Promise.all(
+    //   field.requirements.map(async fn => {
+    //     const error = await fn(field.value);
+    //     if (error && field.errors && !field.errors.includes(error)) {
+    //       field.errors.push(error);
+    //     }
+    //   }),
+    // );
 
     field.meta.loading = false;
   }
@@ -64,11 +64,11 @@ export const extractFinalValues = (state: FormState): IFinalValues => {
   }, {});
 };
 
-export const defaultFieldValidation = async (
+export const defaultFieldValidation = (
   state: FormState,
   dispatch: Function,
-): Promise<[IFinalValues, FormState] | void> => {
-  const stateWithErrors = await Promise.all([...state].map(errorPusher));
+): [IFinalValues, FormState] | void => {
+  const stateWithErrors = [...state].map(errorPusher)
   dispatch({ type: '@@errors', payload: stateWithErrors });
   const errors = stateWithErrors.map(field => field.errors || []);
   if (errors.flat().filter(Boolean).length > 0) {
@@ -193,24 +193,24 @@ export default function useFormFields({
     }
   };
 
-  const onBlurAction = async (name: string, findByName: Function) => {
+  const onBlurAction =  (name: string, findByName: Function) => {
     if (!name) throw Error('no input name');
     const { index, item } = findByName(name);
-    const updatedItem = await errorPusher({ ...item });
+    const updatedItem =  errorPusher({ ...item });
     dispatch({
       type: '@@fieldError',
       payload: { index, item: updatedItem },
     });
   };
 
-  const onBlur = async (input: InputEvent | ICustomInput) => {
+  const onBlur =  (input: InputEvent | ICustomInput) => {
     const findByName = getFromStateByName(state);
     if ('target' in input) {
       const { target } = input;
-      await onBlurAction(target.name, findByName);
+       onBlurAction(target.name, findByName);
     } else {
       const { name } = input;
-      await onBlurAction(name, findByName);
+       onBlurAction(name, findByName);
     }
   };
 
@@ -227,10 +227,10 @@ export default function useFormFields({
     }
   };
 
-  const handleSubmit = async (evt: InputEvent) => {
+  const handleSubmit = (evt: InputEvent) => {
     // todo: cancel Promise
     evt.preventDefault();
-    const values = await validate(state, dispatch);
+    const values = validate(state, dispatch);
     if (Array.isArray(values)) {
       onSubmit(values);
     }
