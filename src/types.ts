@@ -29,6 +29,7 @@ export interface IFinalValues {
 }
 
 export interface IDefaultProps {
+  children: Function | unknown;
   initialFields?: any[];
   validate?: Function;
   onSubmit?: Function;
