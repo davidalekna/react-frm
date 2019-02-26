@@ -1,8 +1,9 @@
 import * as React from 'react';
 import { forkJoin, of, from } from 'rxjs';
-import { mergeMap, map } from 'rxjs/operators';
+import { find, map } from 'rxjs/operators';
 import { isEqual, merge, cloneDeep } from 'lodash';
 import { createObject, isBoolean } from './utils/helpers';
+import useObservable, { createState } from './useObservable';
 import {
   IField,
   FormState,
@@ -30,18 +31,18 @@ export const errorPusher = (field: IField) => {
     // todo: figure out how to useObservable... Might have to switch
     // to useState instead of useReducer?
 
-    const sub = field.requirements.pipe(
-      mergeMap(q =>
-        forkJoin(...q.map(fn => from(Promise.resolve(fn(field.value))))),
-      ),
-    );
+    // const sub = field.requirements.pipe(
+    //   mergeMap(q =>
+    //     forkJoin(...q.map(fn => from(Promise.resolve(fn(field.value))))),
+    //   ),
+    // );
 
-    sub.subscribe({
-      next: value => {
-        console.log('errorPusher', value);
-        field.errors = value;
-      },
-    });
+    // sub.subscribe({
+    //   next: value => {
+    //     console.log('errorPusher', value);
+    //     field.errors = value;
+    //   },
+    // });
 
     field.meta.loading = false;
   }
@@ -86,24 +87,11 @@ export const getFromStateByName = (state: FormState) => (itemName: string) => {
   };
 };
 
-export const findDuplicates = (state: FormState) => (
-  stateToMerge: FormState,
-) => {
-  return stateToMerge.filter(field => {
-    const duplicate = state.map(f => f.name).includes(field.name);
-    if (duplicate) {
-      console.error(`Duplicate field name ${field.name} extracted.`);
-    }
-    return !duplicate;
-  });
-};
-
 const reducer = (initialState: FormState) => (
   state: FormState,
   action: FormActions,
 ): FormState => {
   const findByName = getFromStateByName(state);
-  const removeDuplicates = findDuplicates(state);
   switch (action.type) {
     case '@@fieldUpdate': {
       const { item, index } = findByName(action.payload.name);
@@ -128,9 +116,6 @@ const reducer = (initialState: FormState) => (
       });
       return cloneDeep(state);
     }
-    case '@@addFields': {
-      return cloneDeep([...state, ...removeDuplicates(action.payload)]);
-    }
     case '@@errors': {
       return cloneDeep(action.payload);
     }
@@ -150,24 +135,25 @@ export function Form({
   onSubmit = () => {},
 }: IDefaultProps) {
   const fields: FormState = cloneDeep(
-    initialFields.map((fld: IField) => {
-      let requirements: any = [];
-      if (Array.isArray(fld.requirements) && fld.requirements.length) {
-        // Convert requirements into Observables
-        requirements = of(fld.requirements);
-      }
-      return {
-        ...fld,
-        requirements,
-        meta: { touched: false, loading: false },
-      };
-    }),
+    initialFields.map((fld: IField) => ({
+      ...fld,
+      meta: { touched: false, loading: false },
+    })),
   );
 
-  const [state, dispatch] = React.useReducer(
-    reducer(fields),
-    cloneDeep(fields),
-  );
+  // const [state, dispatch] = React.useReducer(
+  //   reducer(fields),
+  //   cloneDeep(fields),
+  // );
+
+  const dispatch: any = () => {};
+
+  // Rxjs state
+
+  const disp = createState('reducers', of(fields));
+  const state = useObservable(disp, fields);
+
+  // Rxjs state
 
   const onChangeTarget = ({ target }: InputEvent) => {
     if (!target.name) throw Error('no input name');
@@ -202,11 +188,18 @@ export function Form({
   const onBlurAction = (name: string, findByName: Function) => {
     if (!name) throw Error('no input name');
     const { index, item } = findByName(name);
-    const updatedItem = errorPusher({ ...item });
-    dispatch({
-      type: '@@fieldError',
-      payload: { index, item: updatedItem },
+
+    disp.pipe().subscribe({
+      next(value) {
+        console.log(value);
+      },
     });
+
+    // const updatedItem = errorPusher({ ...item });
+    // dispatch({
+    //   type: '@@fieldError',
+    //   payload: { index, item: updatedItem },
+    // });
   };
 
   const onBlur = (input: InputEvent | ICustomInput) => {
@@ -246,13 +239,10 @@ export function Form({
     dispatch({ type: '@@reset' });
   };
 
-  const touched = () =>
-    state.find(({ meta }: { meta: any }) => meta && meta.touched)
-      ? true
-      : false;
-
-  const addFields = (fields: FormState) => {
-    dispatch({ type: '@@addFields', payload: fields });
+  const touched = () => {
+    // state.find(({ meta }: { meta: any }) => meta && meta.touched)
+    //   ? true
+    //   : false;
   };
 
   // RENDERER BELLOW
@@ -264,7 +254,6 @@ export function Form({
     onFocus,
     clearValues,
     touched: touched(),
-    addFields,
   };
 
   const ui =
