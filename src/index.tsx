@@ -1,9 +1,7 @@
 import * as React from 'react';
-import { forkJoin, of, from } from 'rxjs';
-import { find, map } from 'rxjs/operators';
+import { of } from 'rxjs';
 import { isEqual, merge, cloneDeep } from 'lodash';
 import { createObject, isBoolean } from './utils/helpers';
-import useObservable, { createState } from './useObservable';
 import {
   IField,
   FormState,
@@ -14,6 +12,8 @@ import {
   IDefaultProps,
   IFrmContext,
 } from './types';
+import useObservable, { createState } from './useObservable';
+import reducers from './reducers';
 
 const FrmContext = React.createContext<IFrmContext>({
   fields: [],
@@ -150,9 +150,9 @@ export function Form({
 
   // Rxjs state
 
-  const disp = createState('reducers', of(fields));
+  const disp = createState(reducers(fields));
   const state = useObservable(disp, fields);
-
+  console.log('state', state);
   // Rxjs state
 
   const onChangeTarget = ({ target }: InputEvent) => {
