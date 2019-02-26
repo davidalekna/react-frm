@@ -1,4 +1,4 @@
-type Requirement = ([any]: any) => string | void | null;
+import { Observable } from 'rxjs';
 
 export interface IField {
   name: string;
@@ -11,7 +11,7 @@ export interface IField {
   errors?: any[];
   label?: string;
   placeholder?: string;
-  requirements?: Requirement[];
+  requirements?: Observable<Function[]>;
   [key: string]: any;
 }
 

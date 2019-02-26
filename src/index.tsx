@@ -1,8 +1,8 @@
 import * as React from 'react';
-import { forkJoin, from } from 'rxjs';
+import { forkJoin, of, from } from 'rxjs';
+import { mergeMap, map } from 'rxjs/operators';
 import { isEqual, merge, cloneDeep } from 'lodash';
 import { createObject, isBoolean } from './utils/helpers';
-import useObservable from './useObservable';
 import {
   IField,
   FormState,
@@ -27,29 +27,21 @@ export const errorPusher = (field: IField) => {
   if (field.requirements) {
     field.errors = [];
 
-    // TODO: use observable and keep a ref to cancel on input change
+    // todo: figure out how to useObservable... Might have to switch
+    // to useState instead of useReducer?
 
-    const subscription = forkJoin(
-      field.requirements.map(fn => from(Promise.resolve(fn(field.value)))),
-    ).subscribe({
-      next: errors => {
-        console.log(errors);
-        if (errors && field.errors) {
-          field.errors.push(errors);
-        }
+    const sub = field.requirements.pipe(
+      mergeMap(q =>
+        forkJoin(...q.map(fn => from(Promise.resolve(fn(field.value))))),
+      ),
+    );
+
+    sub.subscribe({
+      next: value => {
+        console.log('errorPusher', value);
+        field.errors = value;
       },
     });
-
-    // subscription.unsubscribe();
-
-    // await Promise.all(
-    //   field.requirements.map(async fn => {
-    //     const error = await fn(field.value);
-    //     if (error && field.errors && !field.errors.includes(error)) {
-    //       field.errors.push(error);
-    //     }
-    //   }),
-    // );
 
     field.meta.loading = false;
   }
@@ -115,6 +107,10 @@ const reducer = (initialState: FormState) => (
   switch (action.type) {
     case '@@fieldUpdate': {
       const { item, index } = findByName(action.payload.name);
+
+      // Cancel request if sent from errorPusher()
+      // const s: any = state[index].requirements;
+
       state[index] = Object.assign(item, { ...action.payload, errors: [] });
       return cloneDeep(state);
     }
@@ -154,24 +150,24 @@ export function Form({
   onSubmit = () => {},
 }: IDefaultProps) {
   const fields: FormState = cloneDeep(
-    initialFields.map((fld: IField) => ({
-      ...fld,
-      meta: { touched: false, loading: false },
-    })),
+    initialFields.map((fld: IField) => {
+      let requirements: any = [];
+      if (Array.isArray(fld.requirements) && fld.requirements.length) {
+        // Convert requirements into Observables
+        requirements = of(fld.requirements);
+      }
+      return {
+        ...fld,
+        requirements,
+        meta: { touched: false, loading: false },
+      };
+    }),
   );
 
   const [state, dispatch] = React.useReducer(
     reducer(fields),
     cloneDeep(fields),
   );
-
-  // OBSERVABLE
-
-  // const field$ = from([{ name: 1 }, { name: 2 }]);
-  // const state$ = useObservable(field$, cloneDeep(fields));
-  // console.log(state$);
-
-  // FUNCTIONS
 
   const onChangeTarget = ({ target }: InputEvent) => {
     if (!target.name) throw Error('no input name');
@@ -207,19 +203,6 @@ export function Form({
     if (!name) throw Error('no input name');
     const { index, item } = findByName(name);
     const updatedItem = errorPusher({ ...item });
-
-    field$.subscribe({
-      next(x) {
-        console.log('got value ' + x);
-      },
-      error(err) {
-        console.error('something wrong occurred: ' + err);
-      },
-      complete() {
-        console.log('done');
-      },
-    });
-
     dispatch({
       type: '@@fieldError',
       payload: { index, item: updatedItem },

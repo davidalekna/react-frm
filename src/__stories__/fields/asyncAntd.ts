@@ -28,7 +28,7 @@ export default [
     value: '',
     name: 'username',
     type: 'text',
-    requirements: [usernameAvailable],
+    requirements: [usernameAvailable, usernameAvailable],
   },
   {
     label: 'First Name',
