@@ -141,19 +141,10 @@ export function Form({
     })),
   );
 
-  // const [state, dispatch] = React.useReducer(
-  //   reducer(fields),
-  //   cloneDeep(fields),
-  // );
-
-  const dispatch: any = () => {};
-
-  // Rxjs state
-
-  const disp = createState(reducers(fields));
-  const state = useObservable(disp, fields);
-  console.log('state', state);
-  // Rxjs state
+  const [state, dispatch] = React.useReducer(
+    reducer(fields),
+    cloneDeep(fields),
+  );
 
   const onChangeTarget = ({ target }: InputEvent) => {
     if (!target.name) throw Error('no input name');
@@ -189,17 +180,11 @@ export function Form({
     if (!name) throw Error('no input name');
     const { index, item } = findByName(name);
 
-    disp.pipe().subscribe({
-      next(value) {
-        console.log(value);
-      },
+    const updatedItem = errorPusher({ ...item });
+    dispatch({
+      type: '@@fieldError',
+      payload: { index, item: updatedItem },
     });
-
-    // const updatedItem = errorPusher({ ...item });
-    // dispatch({
-    //   type: '@@fieldError',
-    //   payload: { index, item: updatedItem },
-    // });
   };
 
   const onBlur = (input: InputEvent | ICustomInput) => {
