@@ -1,19 +1,16 @@
 import * as React from 'react';
-import { of } from 'rxjs';
 import { isEqual, merge, cloneDeep } from 'lodash';
 import { createObject, isBoolean } from './utils/helpers';
 import {
   IField,
   FormState,
-  FormActions,
   InputEvent,
   ICustomInput,
   IFinalValues,
   IDefaultProps,
   IFrmContext,
 } from './types';
-import useObservable, { createState } from './useObservable';
-import reducers from './reducers';
+import useObservable, { getFromStateByName } from './useObservable';
 
 const FrmContext = React.createContext<IFrmContext>({
   fields: [],
@@ -72,62 +69,6 @@ export const defaultFieldValidation = (
   }
 };
 
-export const getFromStateByName = (state: FormState) => (itemName: string) => {
-  let itemIndex: number = 0;
-  const item = state.find(({ name }, index) => {
-    itemIndex = index;
-    return name === itemName;
-  });
-  if (!item) {
-    throw Error(`input name ${itemName} doesnt exist on provided fields`);
-  }
-  return {
-    item,
-    index: itemIndex,
-  };
-};
-
-const reducer = (initialState: FormState) => (
-  state: FormState,
-  action: FormActions,
-): FormState => {
-  const findByName = getFromStateByName(state);
-  switch (action.type) {
-    case '@@fieldUpdate': {
-      const { item, index } = findByName(action.payload.name);
-
-      // Cancel request if sent from errorPusher()
-      // const s: any = state[index].requirements;
-
-      state[index] = Object.assign(item, { ...action.payload, errors: [] });
-      return cloneDeep(state);
-    }
-    case '@@fieldError': {
-      // should add error under meta?
-      const { index, item } = action.payload;
-      state[index] = item;
-      return cloneDeep(state);
-    }
-    case '@@fieldTouched': {
-      const { name, loading } = action.payload;
-      const { item, index } = findByName(name);
-      state[index] = merge(item, {
-        meta: { touched: true, loading },
-      });
-      return cloneDeep(state);
-    }
-    case '@@errors': {
-      return cloneDeep(action.payload);
-    }
-    case '@@reset': {
-      return cloneDeep(initialState);
-    }
-    default: {
-      return state;
-    }
-  }
-};
-
 export function Form({
   children,
   initialFields = [],
@@ -141,10 +82,7 @@ export function Form({
     })),
   );
 
-  const [state, dispatch] = React.useReducer(
-    reducer(fields),
-    cloneDeep(fields),
-  );
+  const { state, dispatch } = useObservable(cloneDeep(fields));
 
   const onChangeTarget = ({ target }: InputEvent) => {
     if (!target.name) throw Error('no input name');
