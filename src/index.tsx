@@ -11,6 +11,7 @@ import {
   IFrmContext,
 } from './types';
 import useObservable, { getFromStateByName } from './useObservable';
+import { tap, filter, mergeMap } from 'rxjs/operators';
 
 const FrmContext = React.createContext<IFrmContext>({
   fields: [],
@@ -60,7 +61,7 @@ export const defaultFieldValidation = (
   dispatch: Function,
 ): [IFinalValues, FormState] | void => {
   const stateWithErrors = [...state].map(errorPusher);
-  dispatch({ type: '@@errors', payload: stateWithErrors });
+  dispatch({ type: '@@frm/ERRORS', payload: stateWithErrors });
   const errors = stateWithErrors.map(field => field.errors || []);
   if (errors.flat().filter(Boolean).length > 0) {
     return;
@@ -75,19 +76,19 @@ export function Form({
   validate = defaultFieldValidation,
   onSubmit = () => {},
 }: IDefaultProps) {
-  const fields: FormState = cloneDeep(
+  const initialValue: FormState = cloneDeep(
     initialFields.map((fld: IField) => ({
       ...fld,
       meta: { touched: false, loading: false },
     })),
   );
 
-  const { state, dispatch } = useObservable(cloneDeep(fields));
+  const { state, dispatch } = useObservable(cloneDeep(initialValue));
 
   const onChangeTarget = ({ target }: InputEvent) => {
     if (!target.name) throw Error('no input name');
     dispatch({
-      type: '@@fieldUpdate',
+      type: '@@frm/UPDATE',
       payload: {
         name: target.name,
         value: target.type === 'checkbox' ? target.checked : target.value,
@@ -98,7 +99,7 @@ export function Form({
   const onChangeCustom = ({ name, value }: ICustomInput) => {
     if (!name) throw Error('no input name');
     dispatch({
-      type: '@@fieldUpdate',
+      type: '@@frm/UPDATE',
       payload: {
         name,
         value,
@@ -119,8 +120,9 @@ export function Form({
     const { index, item } = findByName(name);
 
     const updatedItem = errorPusher({ ...item });
+
     dispatch({
-      type: '@@fieldError',
+      type: '@@frm/ERROR',
       payload: { index, item: updatedItem },
     });
   };
@@ -141,11 +143,11 @@ export function Form({
     if ('target' in input) {
       const { target } = input;
       if (!target.name) throw Error('no input name');
-      dispatch({ type: '@@fieldTouched', payload: { name: target.name } });
+      dispatch({ type: '@@frm/TOUCHED', payload: { name: target.name } });
     } else {
       const { name } = input;
       if (!name) throw Error('no input name');
-      dispatch({ type: '@@fieldTouched', payload: { name } });
+      dispatch({ type: '@@frm/TOUCHED', payload: { name } });
     }
   };
 
@@ -159,7 +161,7 @@ export function Form({
   };
 
   const clearValues = () => {
-    dispatch({ type: '@@reset' });
+    dispatch({ type: '@@frm/RESET' });
   };
 
   const touched = () => {
