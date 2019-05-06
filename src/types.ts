@@ -48,38 +48,32 @@ interface IAction {
 }
 
 class FieldUpdate implements IAction {
-  readonly type = '@@fieldUpdate';
+  readonly type = '@@frm/UPDATE';
   constructor(public payload: { name: string; value: unknown }) {}
 }
 
 class FieldError implements IAction {
-  readonly type = '@@fieldError';
+  readonly type = '@@frm/ERROR';
   constructor(public payload: { index: number; item: IField }) {}
 }
 
 class FieldTouched implements IAction {
-  readonly type = '@@fieldTouched';
+  readonly type = '@@frm/TOUCHED';
   constructor(public payload: { name: string; loading?: boolean }) {}
 }
 
-class AddFields implements IAction {
-  readonly type = '@@addFields';
-  constructor(public payload: FormState) {}
-}
-
 class Errors implements IAction {
-  readonly type = '@@errors';
+  readonly type = '@@frm/ERRORS';
   constructor(public payload: FormState) {}
 }
 
 class Reset implements IAction {
-  readonly type = '@@reset';
+  readonly type = '@@frm/RESET';
 }
 
 export type FormActions =
   | FieldUpdate
   | FieldError
   | FieldTouched
-  | AddFields
   | Errors
   | Reset;

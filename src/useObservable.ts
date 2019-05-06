@@ -19,10 +19,7 @@ export const getFromStateByName = (state: FormState) => (itemName: string) => {
   };
 };
 
-const reducer = (initialState: FormState) => (
-  state: FormState,
-  action: FormActions,
-): FormState => {
+const reducer = (initialState: FormState) => (state: any, action: any): any => {
   const findByName = getFromStateByName(state);
   switch (action.type) {
     case '@@frm/UPDATE': {
@@ -62,7 +59,7 @@ const reducer = (initialState: FormState) => (
 
 const actions$ = new Subject();
 
-const useObservable = initialState => {
+const useObservable = (initialState: FormState) => {
   const [state, update] = useState(initialState);
 
   const dispatch = (update: Object) => actions$.next(update);
@@ -70,7 +67,7 @@ const useObservable = initialState => {
   useEffect(() => {
     const s = actions$
       .pipe(
-        tap(asd => console.log(asd)),
+        // tap(asd => console.log(asd)),
         scan(reducer(initialState), initialState),
       )
       .subscribe(update);
