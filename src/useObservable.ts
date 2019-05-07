@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Subject, of, forkJoin, race } from 'rxjs';
+import { Subject, of, forkJoin, race, from } from 'rxjs';
 import { scan, filter, switchMap, map, mergeMap, mapTo } from 'rxjs/operators';
 import { merge as lodashMerge, cloneDeep } from 'lodash';
 import { FormState, FormActions, IField } from './types';
@@ -101,11 +101,16 @@ const useObservable = (initialState: FormState) => {
                   payload.item.requirements.length,
               ),
               switchMap(({ payload }) => {
-                const request = payload.item.requirements
+                const requests = payload.item.requirements
                   .map(fn => Promise.resolve(fn(payload.item.value)))
                   .filter(Boolean);
 
-                const ajax$ = forkJoin(request).pipe(
+                // TODO: use generators so requests could come back one after another.
+                // At the moment forkJoin will wait until all Promise resolves
+                // something like from(function* generator() { ... })
+
+                // like Promise.all will fire on all request and wait until all resolves.
+                const ajax$ = forkJoin(requests).pipe(
                   map(resp => {
                     return {
                       type: '@@frm/FIELD_ERROR_UPDATE',
@@ -121,8 +126,9 @@ const useObservable = (initialState: FormState) => {
 
                 // cancel validation requests
                 const blocker$ = action$
+                  // ERROR: further code cancel request even on another field update
+                  // so need to find a solution to cancel only on same field update
                   .pipe(filter(({ type }: any) => type === '@@frm/UPDATE'))
-                  // note further code cancel request even on another field update
                   .pipe(mapTo({ type: 'cancel-request' }));
 
                 return race(ajax$, blocker$);
