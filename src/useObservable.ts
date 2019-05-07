@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Subject, of, forkJoin, race } from 'rxjs';
+import { Subject, of, forkJoin, race, merge } from 'rxjs';
 import {
   scan,
   filter,
@@ -7,11 +7,14 @@ import {
   map,
   mergeMap,
   mapTo,
-  concat,
   distinctUntilChanged,
   debounceTime,
+  tap,
+  concat,
+  combineLatest,
+  concatMap,
 } from 'rxjs/operators';
-import { merge as lodashMerge, cloneDeep, debounce } from 'lodash';
+import { merge as lodashMerge, cloneDeep } from 'lodash';
 import { FormState, FormActions, IField } from './types';
 
 export const getFromStateByName = (state: FormState) => (itemName: string) => {
@@ -77,9 +80,13 @@ const reducer = (initialState: FormState) => (state: any, action: any): any => {
   }
 };
 
-function fieldBlurEpic() {
-  return mergeMap((action: any) => {
-    if (action.type === '@@frm/FIELD_BLUR') {
+function fieldBlurEpic(action2$) {
+  return action2$.pipe(
+    tap(() => {
+      console.log('we are here');
+    }),
+    filter(({ type }) => type === '@@frm/FIELD_BLUR'),
+    mergeMap((action: any) => {
       return of(action).pipe(
         filter(
           ({ payload }) =>
@@ -114,7 +121,7 @@ function fieldBlurEpic() {
           );
 
           // cancel validation requests
-          const blocker$ = action$
+          const blocker$ = action2$
             // ERROR: further code cancel request even on another field update
             // so need to find a solution to cancel only on same field update
             .pipe(filter(({ type }: any) => type === '@@frm/UPDATE'))
@@ -123,10 +130,8 @@ function fieldBlurEpic() {
           return race(ajax$, blocker$);
         }),
       );
-    }
-
-    return of(action);
-  });
+    }),
+  );
 }
 
 const action$ = new Subject();
@@ -138,8 +143,10 @@ const useObservable = (initialState: FormState) => {
 
   useEffect(() => {
     const s = action$
+      .pipe()
       .pipe(
-        fieldBlurEpic(),
+        // I want to provide full Subject here, not just current action
+        fieldBlurEpic(action$),
         scan(reducer(initialState), initialState),
         distinctUntilChanged(),
       )
