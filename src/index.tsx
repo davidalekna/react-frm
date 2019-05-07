@@ -118,12 +118,9 @@ export function Form({
   const onBlurAction = (name: string, findByName: Function) => {
     if (!name) throw Error('no input name');
     const { index, item } = findByName(name);
-
-    const updatedItem = errorPusher({ ...item });
-
     dispatch({
-      type: '@@frm/ERROR',
-      payload: { index, item: updatedItem },
+      type: '@@frm/FIELD_BLUR',
+      payload: { index, item },
     });
   };
 

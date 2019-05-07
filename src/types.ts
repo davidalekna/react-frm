@@ -52,6 +52,16 @@ class FieldUpdate implements IAction {
   constructor(public payload: { name: string; value: unknown }) {}
 }
 
+class FieldBlur implements IAction {
+  readonly type = '@@frm/FIELD_BLUR';
+  constructor(public payload: { name: string; value: unknown }) {}
+}
+
+class FieldErrorUpdate implements IAction {
+  readonly type = '@@frm/FIELD_ERROR_UPDATE';
+  constructor(public payload: { name: string; value: unknown }) {}
+}
+
 class FieldError implements IAction {
   readonly type = '@@frm/ERROR';
   constructor(public payload: { index: number; item: IField }) {}
@@ -73,6 +83,8 @@ class Reset implements IAction {
 
 export type FormActions =
   | FieldUpdate
+  | FieldBlur
+  | FieldErrorUpdate
   | FieldError
   | FieldTouched
   | Errors
