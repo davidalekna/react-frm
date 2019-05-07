@@ -149,7 +149,9 @@ export function Form({
   };
 
   const handleSubmit = (evt: InputEvent) => {
-    // todo: cancel Promise
+    // TODO: cancel Promise
+    // TODO: should dispatch an action which will validate all the fields
+    // and then return the values
     evt.preventDefault();
     const values = validate(state, dispatch);
     if (Array.isArray(values)) {

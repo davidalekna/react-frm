@@ -1,4 +1,5 @@
 import fieldsMapper from '../fieldsMappers/antd';
+import axios from 'axios';
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -7,6 +8,9 @@ export const usernameAvailable = async value => {
     return 'Required';
   }
   await sleep(1000);
+  // test response cancelation
+  const response = await axios.get('https://api.punkapi.com/v2/beers');
+  console.log(response.data);
   const notAvailable = ['john', 'paul', 'george', 'ringo'];
   if (notAvailable.includes(value.toLowerCase())) {
     return 'Username taken!';

@@ -1,7 +1,17 @@
 import { useEffect, useState } from 'react';
-import { Subject, of, forkJoin, race, from } from 'rxjs';
-import { scan, filter, switchMap, map, mergeMap, mapTo } from 'rxjs/operators';
-import { merge as lodashMerge, cloneDeep } from 'lodash';
+import { Subject, of, forkJoin, race } from 'rxjs';
+import {
+  scan,
+  filter,
+  switchMap,
+  map,
+  mergeMap,
+  mapTo,
+  concat,
+  distinctUntilChanged,
+  debounceTime,
+} from 'rxjs/operators';
+import { merge as lodashMerge, cloneDeep, debounce } from 'lodash';
 import { FormState, FormActions, IField } from './types';
 
 export const getFromStateByName = (state: FormState) => (itemName: string) => {
@@ -18,21 +28,6 @@ export const getFromStateByName = (state: FormState) => (itemName: string) => {
     index: itemIndex,
   };
 };
-
-// export const errorPusher = (field: IField) => {
-//   if (field.requirements) {
-//     field.errors = [];
-
-//     for (const fn of field.requirements) {
-//       const error = fn(field.value);
-//       if (error && !field.errors.includes(error)) {
-//         field.errors.push(error);
-//       }
-//     }
-//   }
-
-//   return field;
-// };
 
 const reducer = (initialState: FormState) => (state: any, action: any): any => {
   const findByName = getFromStateByName(state);
@@ -82,6 +77,58 @@ const reducer = (initialState: FormState) => (state: any, action: any): any => {
   }
 };
 
+function fieldBlurEpic() {
+  return mergeMap((action: any) => {
+    if (action.type === '@@frm/FIELD_BLUR') {
+      return of(action).pipe(
+        filter(
+          ({ payload }) =>
+            Array.isArray(payload.item.requirements) &&
+            payload.item.requirements.length,
+        ),
+        debounceTime(3000),
+        switchMap(({ payload }) => {
+          const requests = payload.item.requirements
+            .map(fn => Promise.resolve(fn(payload.item.value)))
+            .filter(Boolean);
+
+          // TODO: use generators so requests could come back one after another.
+          // At the moment forkJoin will wait until all Promise resolves
+          // something like from(function* generator() { ... })
+          // or https://github.com/btroncone/learn-rxjs/blob/master/operators/transformation/scan.md
+          // mergeMap can accumulate http responses over time
+
+          // like Promise.all will fire on all request and wait until all resolves.
+          const ajax$ = forkJoin(requests).pipe(
+            map(resp => {
+              return {
+                type: '@@frm/FIELD_ERROR_UPDATE',
+                payload: Object.assign(payload, {
+                  item: {
+                    ...payload.item,
+                    errors: resp.filter(Boolean),
+                  },
+                }),
+              };
+            }),
+          );
+
+          // cancel validation requests
+          const blocker$ = action$
+            // ERROR: further code cancel request even on another field update
+            // so need to find a solution to cancel only on same field update
+            .pipe(filter(({ type }: any) => type === '@@frm/UPDATE'))
+            .pipe(mapTo({ type: 'cancel-request' }));
+
+          return race(ajax$, blocker$);
+        }),
+      );
+    }
+
+    return of(action);
+  });
+}
+
 const action$ = new Subject();
 
 const useObservable = (initialState: FormState) => {
@@ -92,53 +139,9 @@ const useObservable = (initialState: FormState) => {
   useEffect(() => {
     const s = action$
       .pipe(
-        mergeMap((action: any) => {
-          if (action.type === '@@frm/FIELD_BLUR') {
-            return of(action).pipe(
-              filter(
-                ({ payload }) =>
-                  Array.isArray(payload.item.requirements) &&
-                  payload.item.requirements.length,
-              ),
-              switchMap(({ payload }) => {
-                const requests = payload.item.requirements
-                  .map(fn => Promise.resolve(fn(payload.item.value)))
-                  .filter(Boolean);
-
-                // TODO: use generators so requests could come back one after another.
-                // At the moment forkJoin will wait until all Promise resolves
-                // something like from(function* generator() { ... })
-
-                // like Promise.all will fire on all request and wait until all resolves.
-                const ajax$ = forkJoin(requests).pipe(
-                  map(resp => {
-                    return {
-                      type: '@@frm/FIELD_ERROR_UPDATE',
-                      payload: Object.assign(payload, {
-                        item: {
-                          ...payload.item,
-                          errors: resp.filter(Boolean),
-                        },
-                      }),
-                    };
-                  }),
-                );
-
-                // cancel validation requests
-                const blocker$ = action$
-                  // ERROR: further code cancel request even on another field update
-                  // so need to find a solution to cancel only on same field update
-                  .pipe(filter(({ type }: any) => type === '@@frm/UPDATE'))
-                  .pipe(mapTo({ type: 'cancel-request' }));
-
-                return race(ajax$, blocker$);
-              }),
-            );
-          }
-
-          return of(action);
-        }),
+        fieldBlurEpic(),
         scan(reducer(initialState), initialState),
+        distinctUntilChanged(),
       )
       .subscribe(update);
 
