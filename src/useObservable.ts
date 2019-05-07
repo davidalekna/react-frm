@@ -1,15 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Subject, of, merge, forkJoin, from, race } from 'rxjs';
-import {
-  scan,
-  filter,
-  switchMap,
-  map,
-  tap,
-  mergeMap,
-  flatMap,
-  mapTo,
-} from 'rxjs/operators';
+import { Subject, of, forkJoin, race } from 'rxjs';
+import { scan, filter, switchMap, map, mergeMap, mapTo } from 'rxjs/operators';
 import { merge as lodashMerge, cloneDeep } from 'lodash';
 import { FormState, FormActions, IField } from './types';
 
@@ -102,35 +93,36 @@ const useObservable = (initialState: FormState) => {
     const s = action$
       .pipe(
         mergeMap((action: any) => {
-          if (
-            action.type === '@@frm/FIELD_BLUR' &&
-            action.payload.item.requirements
-          ) {
+          if (action.type === '@@frm/FIELD_BLUR') {
             return of(action).pipe(
-              filter(({ payload }) => payload.item.requirements),
+              filter(
+                ({ payload }) =>
+                  Array.isArray(payload.item.requirements) &&
+                  payload.item.requirements.length,
+              ),
               switchMap(({ payload }) => {
                 const request = payload.item.requirements
-                  .map(fn => fn(payload.item.value))
+                  .map(fn => Promise.resolve(fn(payload.item.value)))
                   .filter(Boolean);
 
                 const ajax$ = forkJoin(request).pipe(
                   map(resp => {
-                    return of(
-                      dispatch({
-                        type: '@@frm/FIELD_ERROR_UPDATE',
-                        payload: Object.assign(payload, {
-                          item: {
-                            ...payload.item,
-                            errors: resp,
-                          },
-                        }),
+                    return {
+                      type: '@@frm/FIELD_ERROR_UPDATE',
+                      payload: Object.assign(payload, {
+                        item: {
+                          ...payload.item,
+                          errors: resp.filter(Boolean),
+                        },
                       }),
-                    );
+                    };
                   }),
                 );
 
+                // cancel validation requests
                 const blocker$ = action$
                   .pipe(filter(({ type }: any) => type === '@@frm/UPDATE'))
+                  // note further code cancel request even on another field update
                   .pipe(mapTo({ type: 'cancel-request' }));
 
                 return race(ajax$, blocker$);

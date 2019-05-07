@@ -6,7 +6,7 @@ export const usernameAvailable = async value => {
   if (!value) {
     return 'Required';
   }
-  await sleep(2500);
+  await sleep(1000);
   const notAvailable = ['john', 'paul', 'george', 'ringo'];
   if (notAvailable.includes(value.toLowerCase())) {
     return 'Username taken!';
