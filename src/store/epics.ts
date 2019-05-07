@@ -1,17 +1,14 @@
-import { of, forkJoin, race, merge } from 'rxjs';
-import {
-  filter,
-  switchMap,
-  map,
-  mergeMap,
-  mapTo,
-  debounceTime,
-  tap,
-} from 'rxjs/operators';
+import { of, forkJoin, race, merge, concat } from 'rxjs';
+import { filter, switchMap, map, mergeMap, mapTo, tap } from 'rxjs/operators';
+
+function ofType(actionType: string) {
+  return filter(({ type }: any) => type === actionType);
+}
 
 export function fieldBlurEpic(action$) {
   return action$.pipe(
-    filter(({ type }) => type === '@@frm/FIELD_BLUR'),
+    ofType('@@frm/FIELD_BLUR'),
+    // debounceTime(1500), stops sync functions from running
     mergeMap((action: any) => {
       return of(action).pipe(
         filter(
@@ -19,7 +16,6 @@ export function fieldBlurEpic(action$) {
             Array.isArray(payload.item.requirements) &&
             payload.item.requirements.length,
         ),
-        debounceTime(3000),
         switchMap(({ payload }) => {
           const requests = payload.item.requirements
             .map(fn => Promise.resolve(fn(payload.item.value)))
@@ -48,18 +44,38 @@ export function fieldBlurEpic(action$) {
 
           // cancel validation requests
           const blocker$ = action$
-            // ERROR: further code cancel request even on another field update
-            // so need to find a solution to cancel only on same field update
-            .pipe(filter(({ type }: any) => type === '@@frm/UPDATE'))
+            // cancel request only if same field was edited
+            // before promise completes
+            .pipe(
+              ofType('@@frm/UPDATE'),
+              filter((act: any) => {
+                return act.payload.name === action.payload.item.name;
+              }),
+            )
             .pipe(mapTo({ type: 'cancel-request' }));
 
-          return race(ajax$, blocker$);
+          // TODO: dispatch loading state on field
+          return concat(race(ajax$, blocker$));
         }),
       );
     }),
   );
 }
 
-export function fieldEpic(action$) {
-  return action$.pipe(filter(({ type }) => type !== '@@frm/FIELD_BLUR'));
-}
+export const combineEpics = (...epics) => {
+  return action$ => {
+    return merge(
+      action$,
+      ...epics.map(epic => {
+        const output$ = epic(action$);
+        if (!output$) {
+          throw new TypeError(
+            `combineEpics: one of the provided Epics "${epic.name ||
+              '<anonymous>'}" does not return a stream. Double check you\'re not missing a return statement!`,
+          );
+        }
+        return output$;
+      }),
+    );
+  };
+};

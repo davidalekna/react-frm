@@ -3,7 +3,7 @@ import { Subject, merge } from 'rxjs';
 import { scan } from 'rxjs/operators';
 import { merge as lodashMerge, cloneDeep } from 'lodash';
 import { FormState } from './types';
-import { fieldBlurEpic, fieldEpic } from './epics';
+import { combineEpics, fieldBlurEpic } from './store/epics';
 
 export const getFromStateByName = (state: FormState) => (itemName: string) => {
   let itemIndex: number = 0;
@@ -70,13 +70,15 @@ const reducer = (initialState: FormState) => (state: any, action: any): any => {
 
 const action$ = new Subject();
 
-const useObservable = (initialState: FormState) => {
+const useObservable = (initialState: FormState, outsideEpics = []) => {
   const [state, update] = useState(initialState);
+
+  const combinedEpics = combineEpics(fieldBlurEpic, ...outsideEpics);
 
   const dispatch = (update: Object) => action$.next(update);
 
   useEffect(() => {
-    const s = merge(fieldBlurEpic(action$), fieldEpic(action$))
+    const s = combinedEpics(action$)
       .pipe(scan(reducer(initialState), initialState))
       .subscribe(update);
 
