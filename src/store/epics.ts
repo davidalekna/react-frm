@@ -8,9 +8,10 @@ import {
   mergeAll,
   scan,
 } from 'rxjs/operators';
+import { FormActions } from './types';
 
 function ofType(actionType: string) {
-  return filter(({ type }: any) => type === actionType);
+  return filter(({ type }: FormActions) => type === actionType);
 }
 
 export function fieldBlurEpic(action$) {
