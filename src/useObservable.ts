@@ -1,9 +1,19 @@
 import { useEffect, useState } from 'react';
-import { Subject, merge } from 'rxjs';
+import { Subject } from 'rxjs';
 import { scan } from 'rxjs/operators';
 import { merge as lodashMerge, cloneDeep } from 'lodash';
 import { FormState } from './types';
 import { combineEpics, fieldBlurEpic } from './store/epics';
+import { FormActions } from './store/types';
+import {
+  UPDATE,
+  FIELD_BLUR,
+  FIELD_ERROR_UPDATE,
+  ERROR,
+  TOUCHED,
+  ERRORS,
+  RESET,
+} from './store/actions';
 
 export const getFromStateByName = (state: FormState) => (itemName: string) => {
   let itemIndex: number = 0;
@@ -20,10 +30,13 @@ export const getFromStateByName = (state: FormState) => (itemName: string) => {
   };
 };
 
-const reducer = (initialState: FormState) => (state: any, action: any): any => {
+const reducer = (initialState: FormState) => (
+  state: FormState,
+  action: FormActions,
+): FormState => {
   const findByName = getFromStateByName(state);
   switch (action.type) {
-    case '@@frm/UPDATE': {
+    case UPDATE: {
       const { item, index } = findByName(action.payload.name);
 
       // Cancel request if sent from errorPusher()
@@ -32,18 +45,18 @@ const reducer = (initialState: FormState) => (state: any, action: any): any => {
       state[index] = Object.assign(item, { ...action.payload, errors: [] });
       return cloneDeep(state);
     }
-    case '@@frm/ERROR': {
+    case ERROR: {
       // should add error under meta?
       const { index, item } = action.payload;
       state[index] = item;
       return cloneDeep(state);
     }
-    case '@@frm/FIELD_BLUR': {
+    case FIELD_BLUR: {
       const { index, item } = action.payload;
       state[index] = item;
       return cloneDeep(state);
     }
-    case '@@frm/TOUCHED': {
+    case TOUCHED: {
       const { name, loading } = action.payload;
       const { item, index } = findByName(name);
       state[index] = lodashMerge(item, {
@@ -51,15 +64,15 @@ const reducer = (initialState: FormState) => (state: any, action: any): any => {
       });
       return cloneDeep(state);
     }
-    case '@@frm/FIELD_ERROR_UPDATE': {
+    case FIELD_ERROR_UPDATE: {
       const { index, item } = action.payload;
       state[index] = item;
       return cloneDeep(state);
     }
-    case '@@frm/ERRORS': {
+    case ERRORS: {
       return cloneDeep(action.payload);
     }
-    case '@@frm/RESET': {
+    case RESET: {
       return cloneDeep(initialState);
     }
     default: {
@@ -70,7 +83,10 @@ const reducer = (initialState: FormState) => (state: any, action: any): any => {
 
 const action$ = new Subject();
 
-const useObservable = (initialState: FormState, outsideEpics = []) => {
+const useObservable = (
+  initialState: FormState,
+  outsideEpics: Function[] = [],
+) => {
   const [state, update] = useState(initialState);
 
   const combinedEpics = combineEpics(fieldBlurEpic, ...outsideEpics);
@@ -79,7 +95,7 @@ const useObservable = (initialState: FormState, outsideEpics = []) => {
 
   useEffect(() => {
     const s = combinedEpics(action$)
-      .pipe(scan(reducer(initialState), initialState))
+      .pipe(scan<any>(reducer(initialState), initialState))
       .subscribe(update);
 
     return () => s.unsubscribe();

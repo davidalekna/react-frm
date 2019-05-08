@@ -11,6 +11,7 @@ import {
   IFrmContext,
 } from './types';
 import useObservable, { getFromStateByName } from './useObservable';
+import { fieldUpdate } from './store/actions';
 
 const FrmContext = React.createContext<IFrmContext>({
   fields: [],
@@ -72,7 +73,6 @@ export const defaultFieldValidation = (
 export function Form({
   children,
   initialFields = [],
-  validate = defaultFieldValidation,
   onSubmit = () => {},
 }: IDefaultProps) {
   const initialValue: FormState = cloneDeep(
@@ -86,13 +86,12 @@ export function Form({
 
   const onChangeTarget = ({ target }: InputEvent) => {
     if (!target.name) throw Error('no input name');
-    dispatch({
-      type: '@@frm/UPDATE',
-      payload: {
+    dispatch(
+      fieldUpdate({
         name: target.name,
         value: target.type === 'checkbox' ? target.checked : target.value,
-      },
-    });
+      }),
+    );
   };
 
   const onChangeCustom = ({ name, value }: ICustomInput) => {
@@ -152,7 +151,7 @@ export function Form({
     // TODO: should dispatch an action which will validate all the fields
     // and then return the values
     evt.preventDefault();
-    const values = validate(state, dispatch);
+    const values = defaultFieldValidation(state, dispatch);
     if (Array.isArray(values)) {
       onSubmit(values);
     }
