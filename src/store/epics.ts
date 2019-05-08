@@ -24,14 +24,14 @@ export function fieldBlurEpic(action$) {
             payload.item.requirements.length,
         ),
         switchMap(({ payload }) => {
+          // add requests into an Observable from
           const requests = payload.item.requirements
             .map(fn => from(Promise.resolve(fn(payload.item.value))))
             .filter(Boolean);
 
-          // TODO: loading state on a field
-
-          // generator generates errors over time and applies to field error
+          // error$ stream generates errors over time and applies to field errors
           const error$ = of(...requests).pipe(
+            // TODO: loading state on a field
             mergeAll(),
             scan((allResponses: any, currentResponse) => {
               return [...allResponses, currentResponse];
@@ -49,10 +49,8 @@ export function fieldBlurEpic(action$) {
             ),
           );
 
-          // cancel validation requests
+          // cancel request if same field that fired them was edited
           const blocker$ = action$
-            // cancel request only if same field was edited
-            // before promise completes
             .pipe(
               ofType('@@frm/UPDATE'),
               filter((act: any) => {

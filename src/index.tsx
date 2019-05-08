@@ -11,7 +11,6 @@ import {
   IFrmContext,
 } from './types';
 import useObservable, { getFromStateByName } from './useObservable';
-import { tap, filter, mergeMap } from 'rxjs/operators';
 
 const FrmContext = React.createContext<IFrmContext>({
   fields: [],
