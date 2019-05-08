@@ -36,20 +36,17 @@ export function fieldBlurEpic(action$) {
             scan((allResponses: any, currentResponse) => {
               return [...allResponses, currentResponse];
             }, []),
-            mergeMap(errors => {
-              if (errors) {
-                return of({
-                  type: '@@frm/FIELD_ERROR_UPDATE',
-                  payload: Object.assign(payload, {
-                    item: {
-                      ...payload.item,
-                      errors: errors.filter(Boolean),
-                    },
-                  }),
-                });
-              }
-              return of();
-            }),
+            mergeMap(errors =>
+              of({
+                type: '@@frm/FIELD_ERROR_UPDATE',
+                payload: Object.assign(payload, {
+                  item: {
+                    ...payload.item,
+                    errors: errors.filter(Boolean),
+                  },
+                }),
+              }),
+            ),
           );
 
           // cancel validation requests

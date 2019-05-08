@@ -4,7 +4,7 @@ import axios from 'axios';
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 const dataRequest = async () => {
-  await sleep(1500);
+  await sleep(3000);
   const { data } = await axios.get('https://api.punkapi.com/v2/beers');
   console.log(data);
 };
@@ -13,7 +13,7 @@ export const usernameAvailable = async value => {
   if (!value) {
     return 'Required';
   }
-  await sleep(1000);
+  await sleep(2000);
   const notAvailable = ['john', 'paul', 'george', 'ringo'];
   if (notAvailable.includes(value.toLowerCase())) {
     return 'Username taken!';
