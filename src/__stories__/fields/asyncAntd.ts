@@ -35,7 +35,7 @@ export default [
     value: '',
     name: 'username',
     type: 'text',
-    requirements: [usernameAvailable, usernameAvailable, dataRequest],
+    requirements: [mustContainLetter('e'), usernameAvailable, dataRequest],
   },
   {
     label: 'First Name',
