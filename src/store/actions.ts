@@ -6,7 +6,15 @@ export const TOUCHED = '@@frm/TOUCHED';
 export const ERRORS = '@@frm/ERRORS';
 export const RESET = '@@frm/RESET';
 
-export function fieldUpdate({ name, value }) {
+import { IField } from '../types';
+
+export function fieldUpdate({
+  name,
+  value,
+}: {
+  name: string;
+  value: string | number | boolean;
+}) {
   return {
     type: UPDATE,
     payload: {
@@ -15,3 +23,12 @@ export function fieldUpdate({ name, value }) {
     },
   };
 }
+
+export function fieldBlur({ index, item }: { index: number; item: IField }) {
+  return {
+    type: FIELD_BLUR,
+    payload: { index, item },
+  };
+}
+
+// TODO: move all dispatch actions in here

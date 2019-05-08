@@ -1,4 +1,5 @@
 import { of, race, merge, concat, from } from 'rxjs';
+import { FIELD_BLUR, FIELD_ERROR_UPDATE, UPDATE } from './actions';
 import {
   filter,
   switchMap,
@@ -14,7 +15,7 @@ function ofType(actionType: string) {
 
 export function fieldBlurEpic(action$) {
   return action$.pipe(
-    ofType('@@frm/FIELD_BLUR'),
+    ofType(FIELD_BLUR),
     // debounceTime(1500), stops sync functions from running
     mergeMap((action: any) => {
       return of(action).pipe(
@@ -38,7 +39,7 @@ export function fieldBlurEpic(action$) {
             }, []),
             mergeMap(errors =>
               of({
-                type: '@@frm/FIELD_ERROR_UPDATE',
+                type: FIELD_ERROR_UPDATE,
                 payload: Object.assign(payload, {
                   item: {
                     ...payload.item,
@@ -52,7 +53,7 @@ export function fieldBlurEpic(action$) {
           // cancel request if same field that fired them was edited
           const blocker$ = action$
             .pipe(
-              ofType('@@frm/UPDATE'),
+              ofType(UPDATE),
               filter((act: any) => {
                 return act.payload.name === action.payload.item.name;
               }),

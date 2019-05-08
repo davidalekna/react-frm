@@ -11,7 +11,8 @@ import {
   IFrmContext,
 } from './types';
 import useObservable, { getFromStateByName } from './useObservable';
-import { fieldUpdate } from './store/actions';
+import { fieldUpdate, fieldBlur } from './store/actions';
+import { ERRORS } from './store/actions';
 
 const FrmContext = React.createContext<IFrmContext>({
   fields: [],
@@ -61,7 +62,7 @@ export const defaultFieldValidation = (
   dispatch: Function,
 ): [IFinalValues, FormState] | void => {
   const stateWithErrors = [...state].map(errorPusher);
-  dispatch({ type: '@@frm/ERRORS', payload: stateWithErrors });
+  dispatch({ type: ERRORS, payload: stateWithErrors });
   const errors = stateWithErrors.map(field => field.errors || []);
   if (errors.flat().filter(Boolean).length > 0) {
     return;
@@ -96,13 +97,12 @@ export function Form({
 
   const onChangeCustom = ({ name, value }: ICustomInput) => {
     if (!name) throw Error('no input name');
-    dispatch({
-      type: '@@frm/UPDATE',
-      payload: {
+    dispatch(
+      fieldUpdate({
         name,
         value,
-      },
-    });
+      }),
+    );
   };
 
   const onChange = (input: InputEvent | ICustomInput) => {
@@ -116,10 +116,12 @@ export function Form({
   const onBlurAction = (name: string, findByName: Function) => {
     if (!name) throw Error('no input name');
     const { index, item } = findByName(name);
-    dispatch({
-      type: '@@frm/FIELD_BLUR',
-      payload: { index, item },
-    });
+    dispatch(
+      fieldBlur({
+        index,
+        item,
+      }),
+    );
   };
 
   const onBlur = (input: InputEvent | ICustomInput) => {
