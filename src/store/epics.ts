@@ -1,4 +1,4 @@
-import { of, race, merge, concat, from } from 'rxjs';
+import { of, merge, race, from, forkJoin } from 'rxjs';
 import { FIELD_BLUR, UPDATE, VALIDATE_ALL_FIELDS, FORM_RESET } from './actions';
 import { fieldErrorUpdate } from './actions';
 import {
@@ -9,8 +9,8 @@ import {
   mergeAll,
   scan,
   map,
-  tap,
   takeUntil,
+  tap,
 } from 'rxjs/operators';
 import { FormActions } from './types';
 import { FormState, IField } from '../types';
@@ -48,14 +48,13 @@ export function fieldBlurEpic(action$) {
             }, []),
             mergeMap(errors =>
               of(
-                fieldErrorUpdate(
-                  Object.assign(payload, {
-                    item: {
-                      ...payload.item,
-                      errors: errors.filter(Boolean),
-                    },
-                  }),
-                ),
+                fieldErrorUpdate({
+                  ...payload,
+                  item: {
+                    ...payload.item,
+                    errors: errors.filter(Boolean),
+                  },
+                }),
               ),
             ),
             takeUntil(
@@ -63,9 +62,10 @@ export function fieldBlurEpic(action$) {
                 action$.pipe(ofType(FORM_RESET)),
                 action$.pipe(
                   ofType(UPDATE),
-                  filter((act: any) => {
-                    console.log('we are here');
-                    return act.payload.name === action.payload.item.name;
+                  filter((innerAction: any) => {
+                    return (
+                      innerAction.payload.name === action.payload.item.name
+                    );
                   }),
                 ),
               ).pipe(mapTo({ type: 'cancel-request' })),
@@ -77,22 +77,55 @@ export function fieldBlurEpic(action$) {
   );
 }
 
-// export function validateAllFieldsEpic(action$) {
-//   return action$.pipe(
-//     ofType(VALIDATE_ALL_FIELDS),
-//     switchMap(({ payload }: { payload: FormState }) => {
-//       const newState = from(payload).pipe(
-//         map((field: IField) => {
-//           console.log(field);
+export function validateAllFieldsEpic(action$) {
+  return action$.pipe(
+    ofType(VALIDATE_ALL_FIELDS),
+    switchMap(({ payload }: { payload: FormState }) => {
+      // TODO: race on forkJoin, no iterators here!
 
-//           return field;
-//         }),
-//       );
+      const newState = from(payload.map(f => of(f))).pipe(
+        mergeMap(field => {
+          return field.pipe(
+            filter((field: any) => {
+              return (
+                Array.isArray(field.requirements) && field.requirements.length
+              );
+            }),
+            mergeMap((field: any) => {
+              // add requests into an Observable from
+              console.log(field);
 
-//       return of(newState);
-//     }),
-//   );
-// }
+              const requests = field.requirements
+                .map(fn => from(Promise.resolve(fn(field.value))))
+                .filter(Boolean);
+
+              const error$ = forkJoin(...requests).pipe(
+                map(errors => {
+                  console.log(errors);
+                  return of(
+                    fieldErrorUpdate({
+                      ...field,
+                      item: {
+                        ...field.item,
+                        errors: errors.filter(Boolean),
+                      },
+                    }),
+                  );
+                }),
+              );
+
+              return error$;
+            }),
+          );
+        }),
+      );
+
+      return newState;
+    }),
+  );
+}
+
+// COMBINE EPICS
 
 export const combineEpics = (...epics) => {
   return action$ => {
