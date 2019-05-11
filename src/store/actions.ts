@@ -6,15 +6,9 @@ export const TOUCHED = '@@frm/TOUCHED';
 export const ERRORS = '@@frm/ERRORS';
 export const RESET = '@@frm/RESET';
 
-import { IField } from '../types';
+import { IField, FormState } from '../types';
 
-export function fieldUpdate({
-  name,
-  value,
-}: {
-  name: string;
-  value: string | number | boolean;
-}) {
+export function fieldUpdate({ name, value }: { name: string; value: any }) {
   return {
     type: UPDATE,
     payload: {
@@ -31,4 +25,22 @@ export function fieldBlur({ index, item }: { index: number; item: IField }) {
   };
 }
 
-// TODO: move all dispatch actions in here
+export function fieldTouched(name: string) {
+  return {
+    type: TOUCHED,
+    payload: { name },
+  };
+}
+
+export function formReset() {
+  return {
+    type: RESET,
+  };
+}
+
+export function formErrors(stateWithErrors: FormState) {
+  return {
+    type: ERRORS,
+    payload: stateWithErrors,
+  };
+}

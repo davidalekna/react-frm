@@ -1,6 +1,14 @@
 import * as React from 'react';
 import { isEqual, merge, cloneDeep } from 'lodash';
 import { createObject, isBoolean } from './utils/helpers';
+import useObservable, { getFromStateByName } from './useObservable';
+import {
+  fieldUpdate,
+  fieldBlur,
+  fieldTouched,
+  formReset,
+  formErrors,
+} from './store/actions';
 import {
   IField,
   FormState,
@@ -10,9 +18,6 @@ import {
   IDefaultProps,
   IFrmContext,
 } from './types';
-import useObservable, { getFromStateByName } from './useObservable';
-import { fieldUpdate, fieldBlur } from './store/actions';
-import { ERRORS } from './store/actions';
 
 const FrmContext = React.createContext<IFrmContext>({
   fields: [],
@@ -26,23 +31,6 @@ const FrmContext = React.createContext<IFrmContext>({
 export const errorPusher = (field: IField) => {
   if (field.requirements) {
     field.errors = [];
-
-    // todo: figure out how to useObservable... Might have to switch
-    // to useState instead of useReducer?
-
-    // const sub = field.requirements.pipe(
-    //   mergeMap(q =>
-    //     forkJoin(...q.map(fn => from(Promise.resolve(fn(field.value))))),
-    //   ),
-    // );
-
-    // sub.subscribe({
-    //   next: value => {
-    //     console.log('errorPusher', value);
-    //     field.errors = value;
-    //   },
-    // });
-
     field.meta.loading = false;
   }
   return field;
@@ -62,7 +50,7 @@ export const defaultFieldValidation = (
   dispatch: Function,
 ): [IFinalValues, FormState] | void => {
   const stateWithErrors = [...state].map(errorPusher);
-  dispatch({ type: ERRORS, payload: stateWithErrors });
+  dispatch(formErrors(stateWithErrors));
   const errors = stateWithErrors.map(field => field.errors || []);
   if (errors.flat().filter(Boolean).length > 0) {
     return;
@@ -140,11 +128,11 @@ export function Form({
     if ('target' in input) {
       const { target } = input;
       if (!target.name) throw Error('no input name');
-      dispatch({ type: '@@frm/TOUCHED', payload: { name: target.name } });
+      dispatch(fieldTouched(target.name));
     } else {
       const { name } = input;
       if (!name) throw Error('no input name');
-      dispatch({ type: '@@frm/TOUCHED', payload: { name } });
+      dispatch(fieldTouched(name));
     }
   };
 
@@ -160,7 +148,7 @@ export function Form({
   };
 
   const clearValues = () => {
-    dispatch({ type: '@@frm/RESET' });
+    dispatch(formReset());
   };
 
   const touched = () => {
