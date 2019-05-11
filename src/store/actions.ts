@@ -4,7 +4,7 @@ export const FIELD_ERROR_UPDATE = '@@frm/FIELD_ERROR_UPDATE';
 export const ERROR = '@@frm/ERROR';
 export const TOUCHED = '@@frm/TOUCHED';
 export const ERRORS = '@@frm/ERRORS';
-export const RESET = '@@frm/RESET';
+export const FORM_RESET = '@@frm/FORM_RESET';
 export const VALIDATE_ALL_FIELDS = '@@frm/VALIDATE_ALL_FIELDS';
 
 import { IField, FormState } from '../types';
@@ -35,13 +35,14 @@ export function fieldTouched(name: string) {
 
 export function formReset() {
   return {
-    type: RESET,
+    type: FORM_RESET,
   };
 }
 
-export function validateAllFields() {
+export function validateAllFields(state: FormState) {
   return {
     type: VALIDATE_ALL_FIELDS,
+    payload: state,
   };
 }
 
@@ -49,5 +50,12 @@ export function formErrors(stateWithErrors: FormState) {
   return {
     type: ERRORS,
     payload: stateWithErrors,
+  };
+}
+
+export function fieldErrorUpdate(field: IField) {
+  return {
+    type: FIELD_ERROR_UPDATE,
+    payload: field,
   };
 }

@@ -9,6 +9,7 @@ import {
   fieldTouched,
   formReset,
   formErrors,
+  validateAllFields,
 } from './store/actions';
 import {
   IField,
@@ -142,10 +143,13 @@ export function Form({
     // TODO: should dispatch an action which will validate all the fields
     // and then return the values
     evt.preventDefault();
-    const values = defaultFieldValidation(state, dispatch);
-    if (Array.isArray(values)) {
-      onSubmit(values);
-    }
+
+    dispatch(validateAllFields(state));
+
+    // const values = defaultFieldValidation(state, dispatch);
+    // if (Array.isArray(values)) {
+    //   onSubmit(values);
+    // }
   };
 
   const clearValues = () => {

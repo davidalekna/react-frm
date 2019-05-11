@@ -1,5 +1,6 @@
 import { of, race, merge, concat, from } from 'rxjs';
-import { FIELD_BLUR, FIELD_ERROR_UPDATE, UPDATE } from './actions';
+import { FIELD_BLUR, UPDATE, VALIDATE_ALL_FIELDS, FORM_RESET } from './actions';
+import { fieldErrorUpdate } from './actions';
 import {
   filter,
   switchMap,
@@ -7,10 +8,14 @@ import {
   mapTo,
   mergeAll,
   scan,
+  map,
+  tap,
+  takeUntil,
 } from 'rxjs/operators';
 import { FormActions } from './types';
+import { FormState, IField } from '../types';
 
-function ofType(actionType: string) {
+export function ofType(actionType: string) {
   return filter(({ type }: FormActions) => type === actionType);
 }
 
@@ -31,43 +36,63 @@ export function fieldBlurEpic(action$) {
             .map(fn => from(Promise.resolve(fn(payload.item.value))))
             .filter(Boolean);
 
+          // ERROR: continues until it finisheds. How to stop scan?
+
           // error$ stream generates errors over time and applies to field errors
-          const error$ = of(...requests).pipe(
+          // TODO: dispatch loading state on field
+          return of(...requests).pipe(
             // TODO: loading state on a field
             mergeAll(),
             scan((allResponses: any, currentResponse) => {
               return [...allResponses, currentResponse];
             }, []),
             mergeMap(errors =>
-              of({
-                type: FIELD_ERROR_UPDATE,
-                payload: Object.assign(payload, {
-                  item: {
-                    ...payload.item,
-                    errors: errors.filter(Boolean),
-                  },
-                }),
-              }),
+              of(
+                fieldErrorUpdate(
+                  Object.assign(payload, {
+                    item: {
+                      ...payload.item,
+                      errors: errors.filter(Boolean),
+                    },
+                  }),
+                ),
+              ),
+            ),
+            takeUntil(
+              merge(
+                action$.pipe(ofType(FORM_RESET)),
+                action$.pipe(
+                  ofType(UPDATE),
+                  filter((act: any) => {
+                    console.log('we are here');
+                    return act.payload.name === action.payload.item.name;
+                  }),
+                ),
+              ).pipe(mapTo({ type: 'cancel-request' })),
             ),
           );
-
-          // cancel request if same field that fired them was edited
-          const blocker$ = action$
-            .pipe(
-              ofType(UPDATE),
-              filter((act: any) => {
-                return act.payload.name === action.payload.item.name;
-              }),
-            )
-            .pipe(mapTo({ type: 'cancel-request' }));
-
-          // TODO: dispatch loading state on field
-          return concat(race(error$, blocker$));
         }),
       );
     }),
   );
 }
+
+// export function validateAllFieldsEpic(action$) {
+//   return action$.pipe(
+//     ofType(VALIDATE_ALL_FIELDS),
+//     switchMap(({ payload }: { payload: FormState }) => {
+//       const newState = from(payload).pipe(
+//         map((field: IField) => {
+//           console.log(field);
+
+//           return field;
+//         }),
+//       );
+
+//       return of(newState);
+//     }),
+//   );
+// }
 
 export const combineEpics = (...epics) => {
   return action$ => {

@@ -8,7 +8,7 @@ import {
   ERROR,
   TOUCHED,
   ERRORS,
-  RESET,
+  FORM_RESET,
   VALIDATE_ALL_FIELDS,
 } from './actions';
 
@@ -69,11 +69,12 @@ const formReducer = (initialState: FormState) => (
     case ERRORS: {
       return cloneDeep(action.payload);
     }
-    case RESET: {
+    case FORM_RESET: {
       return cloneDeep(initialState);
     }
     case VALIDATE_ALL_FIELDS: {
-      return state;
+      // double check if requres cloning
+      return cloneDeep(action.payload);
     }
     default: {
       return state;
