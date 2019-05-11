@@ -5,6 +5,7 @@ export const ERROR = '@@frm/ERROR';
 export const TOUCHED = '@@frm/TOUCHED';
 export const ERRORS = '@@frm/ERRORS';
 export const RESET = '@@frm/RESET';
+export const VALIDATE_ALL_FIELDS = '@@frm/VALIDATE_ALL_FIELDS';
 
 import { IField, FormState } from '../types';
 
@@ -35,6 +36,12 @@ export function fieldTouched(name: string) {
 export function formReset() {
   return {
     type: RESET,
+  };
+}
+
+export function validateAllFields() {
+  return {
+    type: VALIDATE_ALL_FIELDS,
   };
 }
 

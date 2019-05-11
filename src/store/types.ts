@@ -7,6 +7,7 @@ import {
   TOUCHED,
   ERRORS,
   RESET,
+  VALIDATE_ALL_FIELDS,
 } from './actions';
 
 interface IAction {
@@ -43,6 +44,10 @@ class Errors implements IAction {
   constructor(public payload: FormState) {}
 }
 
+class ValidateAllFields implements IAction {
+  readonly type = VALIDATE_ALL_FIELDS;
+}
+
 class Reset implements IAction {
   readonly type = RESET;
 }
@@ -54,4 +59,5 @@ export type FormActions =
   | FieldError
   | FieldTouched
   | Errors
+  | ValidateAllFields
   | Reset;

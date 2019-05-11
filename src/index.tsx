@@ -1,7 +1,8 @@
 import * as React from 'react';
 import { isEqual, merge, cloneDeep } from 'lodash';
 import { createObject, isBoolean } from './utils/helpers';
-import useObservable, { getFromStateByName } from './useObservable';
+import { getFromStateByName } from './store/reducer';
+import useObservable from './useObservable';
 import {
   fieldUpdate,
   fieldBlur,
