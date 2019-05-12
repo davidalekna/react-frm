@@ -43,7 +43,7 @@ export default [
     placeholder: 'Donald',
     name: 'firstName',
     type: 'text',
-    requirements: [notEmpty, mustContainLetter('e')],
+    requirements: [notEmpty, mustContainLetter('e'), usernameAvailable],
   },
   {
     label: 'Last Name',

@@ -1,5 +1,6 @@
-import { of, race, merge, concat, from } from 'rxjs';
-import { FIELD_BLUR, FIELD_ERROR_UPDATE, UPDATE } from './actions';
+import { of, merge, from } from 'rxjs';
+import { FIELD_BLUR, UPDATE, FORM_SUBMIT, FORM_RESET } from './actions';
+import { fieldErrorUpdate } from './actions';
 import {
   filter,
   switchMap,
@@ -7,17 +8,61 @@ import {
   mapTo,
   mergeAll,
   scan,
+  map,
+  takeUntil,
+  debounceTime,
+  tap,
 } from 'rxjs/operators';
 import { FormActions } from './types';
+import { FormState, IField } from '../types';
+import { ofType } from './helpers';
 
-function ofType(actionType: string) {
-  return filter(({ type }: FormActions) => type === actionType);
-}
+const fieldValidator = action$ => {
+  return switchMap(({ payload }) => {
+    // add requests into an Observable from
+    const requests = payload.item.requirements
+      .map(fn => from(Promise.resolve(fn(payload.item.value))))
+      .filter(Boolean);
+
+    // error$ stream generates errors over time and applies to field errors
+    return of(...requests).pipe(
+      mergeAll(),
+      scan((allResponses: any, currentResponse) => {
+        return [...allResponses, currentResponse];
+      }, []),
+      mergeMap(errors =>
+        of(
+          fieldErrorUpdate({
+            ...payload,
+            item: {
+              ...payload.item,
+              errors: errors.filter(Boolean),
+              meta: {
+                ...payload.item.meta,
+                loading: requests.length !== errors.length,
+              },
+            },
+          }),
+        ),
+      ),
+      takeUntil(
+        merge(
+          action$.pipe(ofType(FORM_RESET)),
+          action$.pipe(
+            ofType(UPDATE),
+            filter((innerAction: any) => {
+              return innerAction.payload.name === payload.item.name;
+            }),
+          ),
+        ).pipe(mapTo({ type: 'cancel-request' })),
+      ),
+    );
+  });
+};
 
 export function fieldBlurEpic(action$) {
   return action$.pipe(
     ofType(FIELD_BLUR),
-    // debounceTime(1500), stops sync functions from running
     mergeMap((action: any) => {
       return of(action).pipe(
         filter(
@@ -25,56 +70,45 @@ export function fieldBlurEpic(action$) {
             Array.isArray(payload.item.requirements) &&
             payload.item.requirements.length,
         ),
-        switchMap(({ payload }) => {
-          // add requests into an Observable from
-          const requests = payload.item.requirements
-            .map(fn => from(Promise.resolve(fn(payload.item.value))))
-            .filter(Boolean);
+        fieldValidator(action$),
+      );
+    }),
+  );
+}
 
-          // error$ stream generates errors over time and applies to field errors
-          const error$ = of(...requests).pipe(
-            // TODO: loading state on a field
-            mergeAll(),
-            scan((allResponses: any, currentResponse) => {
-              return [...allResponses, currentResponse];
-            }, []),
-            mergeMap(errors =>
-              of({
-                type: FIELD_ERROR_UPDATE,
-                payload: Object.assign(payload, {
-                  item: {
-                    ...payload.item,
-                    errors: errors.filter(Boolean),
-                  },
-                }),
-              }),
-            ),
+export function validateAllFieldsEpic(action$) {
+  return action$.pipe(
+    ofType(FORM_SUBMIT),
+    // TODO: figure out how to forward final values onSubmit 🤔
+    debounceTime(250),
+    switchMap(({ payload }: { payload: FormState }) => {
+      return from(
+        payload.map((item: IField, index: number) => of({ index, item })),
+      ).pipe(
+        mergeMap(field => {
+          return field.pipe(
+            filter(({ item }: any) => {
+              return (
+                Array.isArray(item.requirements) && item.requirements.length
+              );
+            }),
+            map(field => ({ payload: field })),
+            fieldValidator(action$),
           );
-
-          // cancel request if same field that fired them was edited
-          const blocker$ = action$
-            .pipe(
-              ofType(UPDATE),
-              filter((act: any) => {
-                return act.payload.name === action.payload.item.name;
-              }),
-            )
-            .pipe(mapTo({ type: 'cancel-request' }));
-
-          // TODO: dispatch loading state on field
-          return concat(race(error$, blocker$));
         }),
       );
     }),
   );
 }
 
+// COMBINE EPICS
+
 export const combineEpics = (...epics) => {
-  return action$ => {
+  return (...streams) => {
     return merge(
-      action$,
+      streams[0],
       ...epics.map(epic => {
-        const output$ = epic(action$);
+        const output$ = epic(...streams);
         if (!output$) {
           throw new TypeError(
             `combineEpics: one of the provided Epics "${epic.name ||

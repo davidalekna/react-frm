@@ -1,5 +1,3 @@
-import { Observable } from 'rxjs';
-
 export interface IField {
   name: string;
   value: any;
@@ -11,7 +9,7 @@ export interface IField {
   errors?: any[];
   label?: string;
   placeholder?: string;
-  requirements?: Observable<Function[]>;
+  requirements?: Function[];
   [key: string]: any;
 }
 

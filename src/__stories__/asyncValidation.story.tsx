@@ -2,7 +2,7 @@ import * as React from 'react';
 import { storiesOf } from '@storybook/react';
 import { Wrapper } from './components/styles';
 import { Form, Field } from '../index';
-import ShowDocs from '../utils/ShowDocs';
+import ShowDocs from '../__utils__/ShowDocs';
 import initialFields from './fields/asyncAntd';
 import styled from 'styled-components';
 
@@ -82,7 +82,13 @@ const Demo = () => {
                         return (
                           <Label>
                             {props.label}
-                            <FComponent {...props} />
+                            <FComponent
+                              {...{
+                                addonAfter:
+                                  meta && meta.loading ? 'loading' : null,
+                                ...props,
+                              }}
+                            />
                             <FieldErrors errors={errors} />
                           </Label>
                         );
@@ -99,7 +105,13 @@ const Demo = () => {
                         return (
                           <Label>
                             {props.label}
-                            <FComponent {...props} />
+                            <FComponent
+                              {...{
+                                addonAfter:
+                                  meta && meta.loading ? 'loading' : null,
+                                ...props,
+                              }}
+                            />
                             <FieldErrors errors={errors} />
                           </Label>
                         );
@@ -118,7 +130,13 @@ const Demo = () => {
                         return (
                           <Label>
                             {props.label}
-                            <FComponent {...props} />
+                            <FComponent
+                              {...{
+                                addonAfter:
+                                  meta && meta.loading ? 'loading' : null,
+                                ...props,
+                              }}
+                            />
                             <FieldErrors errors={errors} />
                           </Label>
                         );
@@ -135,7 +153,13 @@ const Demo = () => {
                         return (
                           <Label>
                             {props.label}
-                            <FComponent {...props} />
+                            <FComponent
+                              {...{
+                                addonAfter:
+                                  meta && meta.loading ? 'loading' : null,
+                                ...props,
+                              }}
+                            />
                             <FieldErrors errors={errors} />
                           </Label>
                         );
@@ -145,9 +169,8 @@ const Demo = () => {
                 </div>
                 <br />
                 <div>
-                  <button type="submit" disabled={!touched}>
-                    Submit
-                  </button>
+                  {/* disabled={!touched} */}
+                  <button type="submit">Submit</button>
                   <button type="button" onClick={() => clearValues()}>
                     reset
                   </button>
