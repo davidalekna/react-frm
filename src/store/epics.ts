@@ -88,18 +88,17 @@ export function fieldBlurEpic(action$) {
             Array.isArray(payload.item.requirements) &&
             payload.item.requirements.length,
         ),
-        map(action =>
-          lodashMerge(action, {
-            payload: {
-              item: {
-                meta: {
-                  loading: true,
-                },
-              },
-            },
-          }),
-        ),
-        // take from payload
+        // map(action =>
+        //   lodashMerge(action, {
+        //     payload: {
+        //       item: {
+        //         meta: {
+        //           loading: true,
+        //         },
+        //       },
+        //     },
+        //   }),
+        // ),
         fieldValidator(action$),
       );
     }),
