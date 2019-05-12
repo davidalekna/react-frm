@@ -1,5 +1,5 @@
 import { of, merge, from } from 'rxjs';
-import { FIELD_BLUR, UPDATE, VALIDATE_ALL_FIELDS, FORM_RESET } from './actions';
+import { FIELD_BLUR, UPDATE, FORM_SUBMIT, FORM_RESET } from './actions';
 import { fieldErrorUpdate } from './actions';
 import {
   filter,
@@ -11,6 +11,7 @@ import {
   map,
   takeUntil,
   debounceTime,
+  tap,
 } from 'rxjs/operators';
 import { FormActions } from './types';
 import { FormState, IField } from '../types';
@@ -77,7 +78,8 @@ export function fieldBlurEpic(action$) {
 
 export function validateAllFieldsEpic(action$) {
   return action$.pipe(
-    ofType(VALIDATE_ALL_FIELDS),
+    ofType(FORM_SUBMIT),
+    // TODO: figure out how to forward final values onSubmit 🤔
     debounceTime(250),
     switchMap(({ payload }: { payload: FormState }) => {
       return from(
@@ -90,9 +92,7 @@ export function validateAllFieldsEpic(action$) {
                 Array.isArray(item.requirements) && item.requirements.length
               );
             }),
-            map(field => ({
-              payload: field,
-            })),
+            map(field => ({ payload: field })),
             fieldValidator(action$),
           );
         }),

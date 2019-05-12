@@ -9,7 +9,7 @@ import {
   TOUCHED,
   ERRORS,
   FORM_RESET,
-  VALIDATE_ALL_FIELDS,
+  FORM_SUBMIT,
 } from './actions';
 
 export const getFromStateByName = (state: FormState) => (itemName: string) => {
@@ -72,7 +72,7 @@ const formReducer = (initialState: FormState) => (
     case FORM_RESET: {
       return cloneDeep(initialState);
     }
-    case VALIDATE_ALL_FIELDS: {
+    case FORM_SUBMIT: {
       // double check if requres cloning
       return cloneDeep(action.payload);
     }

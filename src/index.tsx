@@ -9,7 +9,7 @@ import {
   fieldTouched,
   formReset,
   formErrors,
-  validateAllFields,
+  formSubmit,
 } from './store/actions';
 import {
   IField,
@@ -144,7 +144,7 @@ export function Form({
     // and then return the values
     evt.preventDefault();
 
-    dispatch(validateAllFields(state));
+    dispatch(formSubmit(state));
 
     // const values = defaultFieldValidation(state, dispatch);
     // if (Array.isArray(values)) {

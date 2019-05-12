@@ -5,7 +5,7 @@ export const ERROR = '@@frm/ERROR';
 export const TOUCHED = '@@frm/TOUCHED';
 export const ERRORS = '@@frm/ERRORS';
 export const FORM_RESET = '@@frm/FORM_RESET';
-export const VALIDATE_ALL_FIELDS = '@@frm/VALIDATE_ALL_FIELDS';
+export const FORM_SUBMIT = '@@frm/FORM_SUBMIT';
 
 import { IField, FormState } from '../types';
 
@@ -39,9 +39,9 @@ export function formReset() {
   };
 }
 
-export function validateAllFields(state: FormState) {
+export function formSubmit(state: FormState) {
   return {
-    type: VALIDATE_ALL_FIELDS,
+    type: FORM_SUBMIT,
     payload: state,
   };
 }

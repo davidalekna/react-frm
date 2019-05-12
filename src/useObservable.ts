@@ -23,7 +23,7 @@ const useObservable = (
     ...outsideEpics,
   );
 
-  const dispatch = (update: Object) => action$.next(update);
+  const dispatch = (next: Object) => action$.next(next);
 
   // fields effect
   useEffect(() => {
