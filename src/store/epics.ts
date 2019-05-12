@@ -12,27 +12,11 @@ import {
   takeUntil,
   tap,
   debounceTime,
+  last,
 } from 'rxjs/operators';
-import { merge as lodashMerge } from 'lodash';
 import { FormActions } from './types';
 import { FormState, IField } from '../types';
 import { ofType } from './helpers';
-
-// TODO: add loading state to fields
-
-const fieldAsyncState = (loading: boolean) => {
-  return map(action =>
-    lodashMerge(action, {
-      payload: {
-        item: {
-          meta: {
-            loading: true,
-          },
-        },
-      },
-    }),
-  );
-};
 
 const fieldValidator = action$ => {
   return switchMap(({ payload }) => {
@@ -58,6 +42,10 @@ const fieldValidator = action$ => {
             item: {
               ...payload.item,
               errors: errors.filter(Boolean),
+              meta: {
+                ...payload.item.meta,
+                loading: requests.length !== errors.length,
+              },
             },
           }),
         ),
@@ -88,17 +76,6 @@ export function fieldBlurEpic(action$) {
             Array.isArray(payload.item.requirements) &&
             payload.item.requirements.length,
         ),
-        // map(action =>
-        //   lodashMerge(action, {
-        //     payload: {
-        //       item: {
-        //         meta: {
-        //           loading: true,
-        //         },
-        //       },
-        //     },
-        //   }),
-        // ),
         fieldValidator(action$),
       );
     }),

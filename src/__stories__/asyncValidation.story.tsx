@@ -82,7 +82,13 @@ const Demo = () => {
                         return (
                           <Label>
                             {props.label}
-                            <FComponent {...props} />
+                            <FComponent
+                              {...{
+                                addonAfter:
+                                  meta && meta.loading ? 'loading' : null,
+                                ...props,
+                              }}
+                            />
                             <FieldErrors errors={errors} />
                           </Label>
                         );
@@ -99,7 +105,13 @@ const Demo = () => {
                         return (
                           <Label>
                             {props.label}
-                            <FComponent {...props} />
+                            <FComponent
+                              {...{
+                                addonAfter:
+                                  meta && meta.loading ? 'loading' : null,
+                                ...props,
+                              }}
+                            />
                             <FieldErrors errors={errors} />
                           </Label>
                         );
@@ -118,7 +130,13 @@ const Demo = () => {
                         return (
                           <Label>
                             {props.label}
-                            <FComponent {...props} />
+                            <FComponent
+                              {...{
+                                addonAfter:
+                                  meta && meta.loading ? 'loading' : null,
+                                ...props,
+                              }}
+                            />
                             <FieldErrors errors={errors} />
                           </Label>
                         );
@@ -135,7 +153,13 @@ const Demo = () => {
                         return (
                           <Label>
                             {props.label}
-                            <FComponent {...props} />
+                            <FComponent
+                              {...{
+                                addonAfter:
+                                  meta && meta.loading ? 'loading' : null,
+                                ...props,
+                              }}
+                            />
                             <FieldErrors errors={errors} />
                           </Label>
                         );
