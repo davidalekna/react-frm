@@ -11,14 +11,31 @@ import {
   map,
   takeUntil,
   tap,
+  debounceTime,
 } from 'rxjs/operators';
+import { merge as lodashMerge } from 'lodash';
 import { FormActions } from './types';
 import { FormState, IField } from '../types';
 import { ofType } from './helpers';
 
-const fieldValiator = action$ => {
+// TODO: add loading state to fields
+
+const fieldAsyncState = (loading: boolean) => {
+  return map(action =>
+    lodashMerge(action, {
+      payload: {
+        item: {
+          meta: {
+            loading: true,
+          },
+        },
+      },
+    }),
+  );
+};
+
+const fieldValidator = action$ => {
   return switchMap(({ payload }) => {
-    console.log(payload);
     // add requests into an Observable from
     const requests = payload.item.requirements
       .map(fn => from(Promise.resolve(fn(payload.item.value))))
@@ -71,8 +88,19 @@ export function fieldBlurEpic(action$) {
             Array.isArray(payload.item.requirements) &&
             payload.item.requirements.length,
         ),
+        map(action =>
+          lodashMerge(action, {
+            payload: {
+              item: {
+                meta: {
+                  loading: true,
+                },
+              },
+            },
+          }),
+        ),
         // take from payload
-        fieldValiator(action$),
+        fieldValidator(action$),
       );
     }),
   );
@@ -81,8 +109,11 @@ export function fieldBlurEpic(action$) {
 export function validateAllFieldsEpic(action$) {
   return action$.pipe(
     ofType(VALIDATE_ALL_FIELDS),
+    debounceTime(250),
     switchMap(({ payload }: { payload: FormState }) => {
-      return from(payload.map((f, index) => of({ index, item: f }))).pipe(
+      return from(
+        payload.map((item: IField, index: number) => of({ index, item })),
+      ).pipe(
         mergeMap(field => {
           return field.pipe(
             filter(({ item }: any) => {
@@ -93,7 +124,7 @@ export function validateAllFieldsEpic(action$) {
             map(field => ({
               payload: field,
             })),
-            fieldValiator(action$),
+            fieldValidator(action$),
           );
         }),
       );
@@ -104,11 +135,11 @@ export function validateAllFieldsEpic(action$) {
 // COMBINE EPICS
 
 export const combineEpics = (...epics) => {
-  return action$ => {
+  return (...streams) => {
     return merge(
-      action$,
+      streams[0],
       ...epics.map(epic => {
-        const output$ = epic(action$);
+        const output$ = epic(...streams);
         if (!output$) {
           throw new TypeError(
             `combineEpics: one of the provided Epics "${epic.name ||

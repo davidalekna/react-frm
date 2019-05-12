@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Subject } from 'rxjs';
-import { scan, filter } from 'rxjs/operators';
+import { scan } from 'rxjs/operators';
 import { FormState } from './types';
 import {
   combineEpics,
@@ -8,8 +8,6 @@ import {
   validateAllFieldsEpic,
 } from './store/epics';
 import formReducer from './store/reducer';
-// import { VALIDATE_ALL_FIELDS } from './store/actions';
-// import useSetState from './useSetState';
 
 const action$ = new Subject();
 
@@ -18,10 +16,6 @@ const useObservable = (
   outsideEpics: Function[] = [],
 ) => {
   const [state, update] = useState(initialState);
-  // const [final, setFinal] = useSetState({
-  //   touched: false,
-  //   valid: false,
-  // });
 
   const combinedEpics = combineEpics(
     fieldBlurEpic,
@@ -39,14 +33,6 @@ const useObservable = (
 
     return () => s.unsubscribe();
   }, [action$]);
-
-  // final values effect
-  // useEffect(() => {
-  //   const s = action$
-  //     .pipe(filter(({ type }: any) => type === VALIDATE_ALL_FIELDS))
-  //     .subscribe(setFinal);
-  //   return () => s.unsubscribe();
-  // }, [action$]);
 
   return { state, dispatch };
 };
