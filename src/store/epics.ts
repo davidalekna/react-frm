@@ -14,10 +14,51 @@ import {
 } from 'rxjs/operators';
 import { FormActions } from './types';
 import { FormState, IField } from '../types';
+import { ofType } from './helpers';
 
-export function ofType(actionType: string) {
-  return filter(({ type }: FormActions) => type === actionType);
-}
+const fieldValiator = action$ => {
+  return switchMap(({ payload }) => {
+    console.log(payload);
+    // add requests into an Observable from
+    const requests = payload.item.requirements
+      .map(fn => from(Promise.resolve(fn(payload.item.value))))
+      .filter(Boolean);
+
+    // ERROR: continues until it finisheds. How to stop scan?
+
+    // error$ stream generates errors over time and applies to field errors
+    // TODO: dispatch loading state on field
+    return of(...requests).pipe(
+      // TODO: loading state on a field
+      mergeAll(),
+      scan((allResponses: any, currentResponse) => {
+        return [...allResponses, currentResponse];
+      }, []),
+      mergeMap(errors =>
+        of(
+          fieldErrorUpdate({
+            ...payload,
+            item: {
+              ...payload.item,
+              errors: errors.filter(Boolean),
+            },
+          }),
+        ),
+      ),
+      takeUntil(
+        merge(
+          action$.pipe(ofType(FORM_RESET)),
+          action$.pipe(
+            ofType(UPDATE),
+            filter((innerAction: any) => {
+              return innerAction.payload.name === payload.item.name;
+            }),
+          ),
+        ).pipe(mapTo({ type: 'cancel-request' })),
+      ),
+    );
+  });
+};
 
 export function fieldBlurEpic(action$) {
   return action$.pipe(
@@ -30,48 +71,8 @@ export function fieldBlurEpic(action$) {
             Array.isArray(payload.item.requirements) &&
             payload.item.requirements.length,
         ),
-        switchMap(({ payload }) => {
-          // add requests into an Observable from
-          const requests = payload.item.requirements
-            .map(fn => from(Promise.resolve(fn(payload.item.value))))
-            .filter(Boolean);
-
-          // ERROR: continues until it finisheds. How to stop scan?
-
-          // error$ stream generates errors over time and applies to field errors
-          // TODO: dispatch loading state on field
-          return of(...requests).pipe(
-            // TODO: loading state on a field
-            mergeAll(),
-            scan((allResponses: any, currentResponse) => {
-              return [...allResponses, currentResponse];
-            }, []),
-            mergeMap(errors =>
-              of(
-                fieldErrorUpdate({
-                  ...payload,
-                  item: {
-                    ...payload.item,
-                    errors: errors.filter(Boolean),
-                  },
-                }),
-              ),
-            ),
-            takeUntil(
-              merge(
-                action$.pipe(ofType(FORM_RESET)),
-                action$.pipe(
-                  ofType(UPDATE),
-                  filter((innerAction: any) => {
-                    return (
-                      innerAction.payload.name === action.payload.item.name
-                    );
-                  }),
-                ),
-              ).pipe(mapTo({ type: 'cancel-request' })),
-            ),
-          );
-        }),
+        // take from payload
+        fieldValiator(action$),
       );
     }),
   );
@@ -81,46 +82,21 @@ export function validateAllFieldsEpic(action$) {
   return action$.pipe(
     ofType(VALIDATE_ALL_FIELDS),
     switchMap(({ payload }: { payload: FormState }) => {
-      // TODO: race on forkJoin, no iterators here!
-
-      const newState = from(payload.map(f => of(f))).pipe(
+      return from(payload.map((f, index) => of({ index, item: f }))).pipe(
         mergeMap(field => {
           return field.pipe(
-            filter((field: any) => {
+            filter(({ item }: any) => {
               return (
-                Array.isArray(field.requirements) && field.requirements.length
+                Array.isArray(item.requirements) && item.requirements.length
               );
             }),
-            mergeMap((field: any) => {
-              // add requests into an Observable from
-              console.log(field);
-
-              const requests = field.requirements
-                .map(fn => from(Promise.resolve(fn(field.value))))
-                .filter(Boolean);
-
-              const error$ = forkJoin(...requests).pipe(
-                map(errors => {
-                  console.log(errors);
-                  return of(
-                    fieldErrorUpdate({
-                      ...field,
-                      item: {
-                        ...field.item,
-                        errors: errors.filter(Boolean),
-                      },
-                    }),
-                  );
-                }),
-              );
-
-              return error$;
-            }),
+            map(field => ({
+              payload: field,
+            })),
+            fieldValiator(action$),
           );
         }),
       );
-
-      return newState;
     }),
   );
 }
