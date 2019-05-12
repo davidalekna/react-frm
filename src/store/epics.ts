@@ -1,4 +1,4 @@
-import { of, merge, race, from, forkJoin } from 'rxjs';
+import { of, merge, from } from 'rxjs';
 import { FIELD_BLUR, UPDATE, VALIDATE_ALL_FIELDS, FORM_RESET } from './actions';
 import { fieldErrorUpdate } from './actions';
 import {
@@ -10,9 +10,7 @@ import {
   scan,
   map,
   takeUntil,
-  tap,
   debounceTime,
-  last,
 } from 'rxjs/operators';
 import { FormActions } from './types';
 import { FormState, IField } from '../types';
@@ -25,12 +23,8 @@ const fieldValidator = action$ => {
       .map(fn => from(Promise.resolve(fn(payload.item.value))))
       .filter(Boolean);
 
-    // ERROR: continues until it finisheds. How to stop scan?
-
     // error$ stream generates errors over time and applies to field errors
-    // TODO: dispatch loading state on field
     return of(...requests).pipe(
-      // TODO: loading state on a field
       mergeAll(),
       scan((allResponses: any, currentResponse) => {
         return [...allResponses, currentResponse];
@@ -68,7 +62,6 @@ const fieldValidator = action$ => {
 export function fieldBlurEpic(action$) {
   return action$.pipe(
     ofType(FIELD_BLUR),
-    // debounceTime(1500), stops sync functions from running
     mergeMap((action: any) => {
       return of(action).pipe(
         filter(
