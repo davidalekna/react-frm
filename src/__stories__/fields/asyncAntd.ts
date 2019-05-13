@@ -1,13 +1,6 @@
 import fieldsMapper from '../fieldsMappers/antd';
-import axios from 'axios';
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-const dataRequest = async () => {
-  await sleep(3000);
-  const { data } = await axios.get('https://api.punkapi.com/v2/beers');
-  console.log(data);
-};
 
 export const usernameAvailable = async value => {
   if (!value) {
@@ -35,7 +28,7 @@ export default [
     value: '',
     name: 'username',
     type: 'text',
-    requirements: [mustContainLetter('e'), usernameAvailable, dataRequest],
+    requirements: [mustContainLetter('e'), usernameAvailable],
   },
   {
     label: 'First Name',
