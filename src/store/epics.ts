@@ -12,10 +12,16 @@ import {
   takeUntil,
   debounceTime,
   tap,
+  buffer,
 } from 'rxjs/operators';
 import { FormActions } from './types';
 import { FormState, IField } from '../types';
-import { ofType } from './helpers';
+import {
+  ofType,
+  containsNoErrors,
+  extractFinalValues,
+  allErrorsEmitted,
+} from './helpers';
 
 const fieldValidator = action$ => {
   return switchMap(({ payload }) => {
@@ -81,23 +87,37 @@ export function validateAllFieldsEpic(action$) {
     ofType(FORM_SUBMIT),
     // TODO: figure out how to forward final values onSubmit 🤔
     debounceTime(250),
-    switchMap(({ payload }: { payload: FormState }) => {
-      return from(
-        payload.map((item: IField, index: number) => of({ index, item })),
-      ).pipe(
-        mergeMap(field => {
-          return field.pipe(
-            filter(({ item }: any) => {
-              return (
-                Array.isArray(item.requirements) && item.requirements.length
-              );
-            }),
-            map(field => ({ payload: field })),
-            fieldValidator(action$),
-          );
-        }),
-      );
-    }),
+    switchMap(
+      ({ payload, onSubmit }: { payload: FormState; onSubmit: Function }) => {
+        const errorsBuffer: IField[] = [];
+        const state$ = payload.map((item: IField, index: number) =>
+          of({ index, item }),
+        );
+
+        return from(state$).pipe(
+          mergeMap(field => {
+            return field.pipe(
+              filter(({ item }: any) => {
+                return (
+                  Array.isArray(item.requirements) && item.requirements.length
+                );
+              }),
+              map(field => ({ payload: field })),
+              fieldValidator(action$),
+              tap(err => {
+                // Side effect: process onSubmit
+                errorsBuffer.push(err.payload.item);
+                return (
+                  allErrorsEmitted(payload, errorsBuffer.length) &&
+                  containsNoErrors(errorsBuffer) &&
+                  onSubmit(extractFinalValues(payload))
+                );
+              }),
+            );
+          }),
+        );
+      },
+    ),
   );
 }
 

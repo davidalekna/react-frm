@@ -30,37 +30,6 @@ const FrmContext = React.createContext<IFrmContext>({
   addFields: () => {},
 });
 
-export const errorPusher = (field: IField) => {
-  if (field.requirements) {
-    field.errors = [];
-    field.meta.loading = false;
-  }
-  return field;
-};
-
-export const extractFinalValues = (state: FormState): IFinalValues => {
-  return state.reduce((acc, field) => {
-    if ((field.value && !isBoolean(field.value)) || isBoolean(field.value)) {
-      return merge(acc, createObject({ [field.name]: field.value }));
-    }
-    return acc;
-  }, {});
-};
-
-export const defaultFieldValidation = (
-  state: FormState,
-  dispatch: Function,
-): [IFinalValues, FormState] | void => {
-  const stateWithErrors = [...state].map(errorPusher);
-  dispatch(formErrors(stateWithErrors));
-  const errors = stateWithErrors.map(field => field.errors || []);
-  if (errors.flat().filter(Boolean).length > 0) {
-    return;
-  } else {
-    return [extractFinalValues(stateWithErrors), stateWithErrors];
-  }
-};
-
 export function Form({
   children,
   initialFields = [],
@@ -139,13 +108,8 @@ export function Form({
   };
 
   const handleSubmit = (evt: InputEvent) => {
-    // TODO: cancel Promise
-    // TODO: should dispatch an action which will validate all the fields
-    // and then return the values
     evt.preventDefault();
-
-    dispatch(formSubmit(state));
-
+    dispatch(formSubmit(state, onSubmit));
     // const values = defaultFieldValidation(state, dispatch);
     // if (Array.isArray(values)) {
     //   onSubmit(values);

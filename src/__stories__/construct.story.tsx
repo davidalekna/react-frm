@@ -6,7 +6,7 @@ import ShowDocs from '../__utils__/ShowDocs';
 import { person, address, otherFields } from './fields/categories';
 import Container from './components/Container';
 
-const onSubmit = ([values]) => {
+const onSubmit = values => {
   console.log(values);
 };
 

@@ -39,10 +39,11 @@ export function formReset() {
   };
 }
 
-export function formSubmit(state: FormState) {
+export function formSubmit(state: FormState, onSubmit: Function) {
   return {
     type: FORM_SUBMIT,
     payload: state,
+    onSubmit,
   };
 }
 

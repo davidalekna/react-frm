@@ -32,7 +32,7 @@ function FieldErrors({ errors = [] }: { errors: string[] }) {
 }
 
 const Demo = () => {
-  const onSubmit = ([values]) => {
+  const onSubmit = values => {
     console.log(values);
   };
 

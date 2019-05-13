@@ -101,10 +101,4 @@ export default [
     name: 'comment',
     type: 'textarea',
   },
-  {
-    label: 'Like apples',
-    value: false,
-    name: 'apples',
-    type: 'checkbox',
-  },
 ].map(field => ({ ...field, component: fieldsMapper }));
