@@ -35,15 +35,11 @@ const formReducer = (initialState: FormState) => (
   switch (action.type) {
     case UPDATE: {
       const { item, index } = findByName(action.payload.name);
-
-      // Cancel request if sent from errorPusher()
-      // const s: any = state[index].requirements;
-
       state[index] = Object.assign(item, { ...action.payload, errors: [] });
       return cloneDeep(state);
     }
     case ERROR: {
-      // should add error under meta?
+      // TODO: should add error under meta?
       const { index, item } = action.payload;
       state[index] = item;
       return cloneDeep(state);
@@ -73,7 +69,6 @@ const formReducer = (initialState: FormState) => (
       return cloneDeep(initialState);
     }
     case FORM_SUBMIT: {
-      // double check if requres cloning
       return cloneDeep(action.payload);
     }
     default: {
