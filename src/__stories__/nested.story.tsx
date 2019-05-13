@@ -5,7 +5,7 @@ import ShowDocs from '../__utils__/ShowDocs';
 import initialFields from './fields/nested';
 import Form from './components/Form';
 
-const onSubmit = ([values]) => {
+const onSubmit = values => {
   console.log(values);
 };
 

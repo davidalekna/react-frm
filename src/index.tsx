@@ -1,6 +1,5 @@
 import * as React from 'react';
-import { isEqual, merge, cloneDeep } from 'lodash';
-import { createObject, isBoolean } from './utils/helpers';
+import { isEqual, cloneDeep } from 'lodash';
 import { getFromStateByName } from './store/reducer';
 import useObservable from './useObservable';
 import {
@@ -8,7 +7,6 @@ import {
   fieldBlur,
   fieldTouched,
   formReset,
-  formErrors,
   formSubmit,
 } from './store/actions';
 import {
@@ -16,7 +14,6 @@ import {
   FormState,
   InputEvent,
   ICustomInput,
-  IFinalValues,
   IDefaultProps,
   IFrmContext,
 } from './types';
@@ -29,37 +26,6 @@ const FrmContext = React.createContext<IFrmContext>({
   clearValues: () => {},
   addFields: () => {},
 });
-
-export const errorPusher = (field: IField) => {
-  if (field.requirements) {
-    field.errors = [];
-    field.meta.loading = false;
-  }
-  return field;
-};
-
-export const extractFinalValues = (state: FormState): IFinalValues => {
-  return state.reduce((acc, field) => {
-    if ((field.value && !isBoolean(field.value)) || isBoolean(field.value)) {
-      return merge(acc, createObject({ [field.name]: field.value }));
-    }
-    return acc;
-  }, {});
-};
-
-export const defaultFieldValidation = (
-  state: FormState,
-  dispatch: Function,
-): [IFinalValues, FormState] | void => {
-  const stateWithErrors = [...state].map(errorPusher);
-  dispatch(formErrors(stateWithErrors));
-  const errors = stateWithErrors.map(field => field.errors || []);
-  if (errors.flat().filter(Boolean).length > 0) {
-    return;
-  } else {
-    return [extractFinalValues(stateWithErrors), stateWithErrors];
-  }
-};
 
 export function Form({
   children,
@@ -139,27 +105,19 @@ export function Form({
   };
 
   const handleSubmit = (evt: InputEvent) => {
-    // TODO: cancel Promise
-    // TODO: should dispatch an action which will validate all the fields
-    // and then return the values
     evt.preventDefault();
-
-    dispatch(formSubmit(state));
-
-    // const values = defaultFieldValidation(state, dispatch);
-    // if (Array.isArray(values)) {
-    //   onSubmit(values);
-    // }
+    dispatch(formSubmit(state, onSubmit));
   };
 
   const clearValues = () => {
     dispatch(formReset());
   };
 
-  const touched = () => {
-    // state.find(({ meta }: { meta: any }) => meta && meta.touched)
-    //   ? true
-    //   : false;
+  const findTouched = () => {
+    const touched = state.find(
+      (field: any) => field.meta && field.meta.touched,
+    );
+    return touched ? true : false;
   };
 
   // RENDERER BELLOW
@@ -169,8 +127,9 @@ export function Form({
     onChange,
     onBlur,
     onFocus,
-    clearValues,
-    touched: touched(),
+    clearValues, // deprecated!
+    reset: clearValues,
+    touched: findTouched(),
   };
 
   const ui =

@@ -14,8 +14,8 @@ const action$ = new Subject();
 const useObservable = (
   initialState: FormState,
   outsideEpics: Function[] = [],
-) => {
-  const [state, update] = useState(initialState);
+): { state: FormState; dispatch: Function } => {
+  const [state, update] = useState<FormState>(initialState);
 
   const combinedEpics = combineEpics(
     fieldBlurEpic,
@@ -25,7 +25,6 @@ const useObservable = (
 
   const dispatch = (next: Object) => action$.next(next);
 
-  // fields effect
   useEffect(() => {
     const s = combinedEpics(action$)
       .pipe(scan<any>(formReducer(initialState), initialState))

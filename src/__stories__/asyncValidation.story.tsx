@@ -32,7 +32,7 @@ function FieldErrors({ errors = [] }: { errors: string[] }) {
 }
 
 const Demo = () => {
-  const onSubmit = ([values]) => {
+  const onSubmit = values => {
     console.log(values);
   };
 
@@ -170,7 +170,9 @@ const Demo = () => {
                 <br />
                 <div>
                   {/* disabled={!touched} */}
-                  <button type="submit">Submit</button>
+                  <button type="submit" disabled={!touched}>
+                    Submit
+                  </button>
                   <button type="button" onClick={() => clearValues()}>
                     reset
                   </button>

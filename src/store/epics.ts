@@ -1,4 +1,4 @@
-import { of, merge, from } from 'rxjs';
+import { of, merge, from, Observable } from 'rxjs';
 import { FIELD_BLUR, UPDATE, FORM_SUBMIT, FORM_RESET } from './actions';
 import { fieldErrorUpdate } from './actions';
 import {
@@ -15,9 +15,14 @@ import {
 } from 'rxjs/operators';
 import { FormActions } from './types';
 import { FormState, IField } from '../types';
-import { ofType } from './helpers';
+import {
+  ofType,
+  containsNoErrors,
+  extractFinalValues,
+  allErrorsEmitted,
+} from './helpers';
 
-const fieldValidator = action$ => {
+const fieldValidator = (action$: Observable<FormActions>) => {
   return switchMap(({ payload }) => {
     // add requests into an Observable from
     const requests = payload.item.requirements
@@ -60,7 +65,7 @@ const fieldValidator = action$ => {
   });
 };
 
-export function fieldBlurEpic(action$) {
+export function fieldBlurEpic(action$: Observable<FormActions>) {
   return action$.pipe(
     ofType(FIELD_BLUR),
     mergeMap((action: any) => {
@@ -79,25 +84,38 @@ export function fieldBlurEpic(action$) {
 export function validateAllFieldsEpic(action$) {
   return action$.pipe(
     ofType(FORM_SUBMIT),
-    // TODO: figure out how to forward final values onSubmit 🤔
     debounceTime(250),
-    switchMap(({ payload }: { payload: FormState }) => {
-      return from(
-        payload.map((item: IField, index: number) => of({ index, item })),
-      ).pipe(
-        mergeMap(field => {
-          return field.pipe(
-            filter(({ item }: any) => {
-              return (
-                Array.isArray(item.requirements) && item.requirements.length
-              );
-            }),
-            map(field => ({ payload: field })),
-            fieldValidator(action$),
-          );
-        }),
-      );
-    }),
+    switchMap(
+      ({ payload, onSubmit }: { payload: FormState; onSubmit: Function }) => {
+        const errorsBuffer: IField[] = [];
+        const state$ = payload.map((item: IField, index: number) =>
+          of({ index, item }),
+        );
+
+        return from(state$).pipe(
+          mergeMap(field => {
+            return field.pipe(
+              filter(({ item }: any) => {
+                return (
+                  Array.isArray(item.requirements) && item.requirements.length
+                );
+              }),
+              map(field => ({ payload: field })),
+              fieldValidator(action$),
+              tap(err => {
+                // Side effect: process onSubmit
+                errorsBuffer.push(err.payload.item);
+                return (
+                  allErrorsEmitted(payload, errorsBuffer.length) &&
+                  containsNoErrors(errorsBuffer) &&
+                  onSubmit(extractFinalValues(payload))
+                );
+              }),
+            );
+          }),
+        );
+      },
+    ),
   );
 }
 
