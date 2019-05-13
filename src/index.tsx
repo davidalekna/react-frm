@@ -1,6 +1,5 @@
 import * as React from 'react';
-import { isEqual, merge, cloneDeep } from 'lodash';
-import { createObject, isBoolean } from './utils/helpers';
+import { isEqual, cloneDeep } from 'lodash';
 import { getFromStateByName } from './store/reducer';
 import useObservable from './useObservable';
 import {
@@ -8,7 +7,6 @@ import {
   fieldBlur,
   fieldTouched,
   formReset,
-  formErrors,
   formSubmit,
 } from './store/actions';
 import {
@@ -16,7 +14,6 @@ import {
   FormState,
   InputEvent,
   ICustomInput,
-  IFinalValues,
   IDefaultProps,
   IFrmContext,
 } from './types';
@@ -110,20 +107,17 @@ export function Form({
   const handleSubmit = (evt: InputEvent) => {
     evt.preventDefault();
     dispatch(formSubmit(state, onSubmit));
-    // const values = defaultFieldValidation(state, dispatch);
-    // if (Array.isArray(values)) {
-    //   onSubmit(values);
-    // }
   };
 
   const clearValues = () => {
     dispatch(formReset());
   };
 
-  const touched = () => {
-    // state.find(({ meta }: { meta: any }) => meta && meta.touched)
-    //   ? true
-    //   : false;
+  const findTouched = () => {
+    const touched = state.find(
+      (field: any) => field.meta && field.meta.touched,
+    );
+    return touched ? true : false;
   };
 
   // RENDERER BELLOW
@@ -133,8 +127,9 @@ export function Form({
     onChange,
     onBlur,
     onFocus,
-    clearValues,
-    touched: touched(),
+    clearValues, // deprecated!
+    reset: clearValues,
+    touched: findTouched(),
   };
 
   const ui =

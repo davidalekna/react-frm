@@ -170,7 +170,9 @@ const Demo = () => {
                 <br />
                 <div>
                   {/* disabled={!touched} */}
-                  <button type="submit">Submit</button>
+                  <button type="submit" disabled={!touched}>
+                    Submit
+                  </button>
                   <button type="button" onClick={() => clearValues()}>
                     reset
                   </button>

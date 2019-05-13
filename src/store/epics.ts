@@ -1,4 +1,4 @@
-import { of, merge, from } from 'rxjs';
+import { of, merge, from, Observable } from 'rxjs';
 import { FIELD_BLUR, UPDATE, FORM_SUBMIT, FORM_RESET } from './actions';
 import { fieldErrorUpdate } from './actions';
 import {
@@ -12,7 +12,6 @@ import {
   takeUntil,
   debounceTime,
   tap,
-  buffer,
 } from 'rxjs/operators';
 import { FormActions } from './types';
 import { FormState, IField } from '../types';
@@ -23,7 +22,7 @@ import {
   allErrorsEmitted,
 } from './helpers';
 
-const fieldValidator = action$ => {
+const fieldValidator = (action$: Observable<FormActions>) => {
   return switchMap(({ payload }) => {
     // add requests into an Observable from
     const requests = payload.item.requirements
@@ -66,7 +65,7 @@ const fieldValidator = action$ => {
   });
 };
 
-export function fieldBlurEpic(action$) {
+export function fieldBlurEpic(action$: Observable<FormActions>) {
   return action$.pipe(
     ofType(FIELD_BLUR),
     mergeMap((action: any) => {
@@ -85,7 +84,6 @@ export function fieldBlurEpic(action$) {
 export function validateAllFieldsEpic(action$) {
   return action$.pipe(
     ofType(FORM_SUBMIT),
-    // TODO: figure out how to forward final values onSubmit 🤔
     debounceTime(250),
     switchMap(
       ({ payload, onSubmit }: { payload: FormState; onSubmit: Function }) => {
