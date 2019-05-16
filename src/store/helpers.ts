@@ -31,7 +31,7 @@ export function ofType(actionType: string) {
 export function containsNoErrors(fields: IField[]) {
   return (
     fields
-      .map((field: any) => field.errors)
+      .map((field: any) => field.meta.errors)
       .reduce((acc, val) => {
         return acc.concat(val);
       }, []).length === 0

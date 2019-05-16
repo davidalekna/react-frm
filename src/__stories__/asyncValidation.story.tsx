@@ -1,10 +1,9 @@
 import * as React from 'react';
 import { storiesOf } from '@storybook/react';
-import { Wrapper } from './components/styles';
 import { Form } from '../index';
 import ShowDocs from '../__utils__/ShowDocs';
 import initialFields from './asyncFields';
-import { renderFields } from './forms/renderFields';
+import { renderFields } from './components/form/renderFields';
 
 const Demo = () => {
   const onSubmit = values => {
@@ -12,7 +11,7 @@ const Demo = () => {
   };
 
   return (
-    <Wrapper>
+    <div style={{ padding: '20px 50px' }}>
       <Form initialFields={initialFields} onSubmit={onSubmit}>
         {({ fields, handleSubmit, reset, touched }) => {
           return (
@@ -34,7 +33,7 @@ const Demo = () => {
           );
         }}
       </Form>
-    </Wrapper>
+    </div>
   );
 };
 

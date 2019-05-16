@@ -5,6 +5,7 @@ export const StyledLabel = styled.label``;
 
 export const FormLabel = styled.div`
   font-weight: 400;
+  margin: 4px 0;
 `;
 
 export function FieldErrors({ errors = [] }: { errors: string[] }) {

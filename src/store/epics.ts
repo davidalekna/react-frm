@@ -41,10 +41,10 @@ const fieldValidator = (action$: Observable<FormActions>) => {
             ...payload,
             item: {
               ...payload.item,
-              errors: errors.filter(Boolean),
               meta: {
                 ...payload.item.meta,
                 loading: requests.length !== errors.length,
+                errors: errors.filter(Boolean),
               },
             },
           }),

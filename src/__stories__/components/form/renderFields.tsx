@@ -1,8 +1,4 @@
 import * as React from 'react';
-import 'antd/lib/date-picker/style/css';
-import 'antd/lib/input/style/css';
-import 'antd/lib/select/style/css';
-import 'antd/lib/checkbox/style/css';
 import { Text, TextArea, DatePicker, Checkbox, Select } from './types';
 
 export function renderFields({ fields = [] }) {

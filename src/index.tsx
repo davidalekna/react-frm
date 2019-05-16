@@ -35,7 +35,7 @@ export function Form({
   const initialValue: FormState = cloneDeep(
     initialFields.map((fld: IField) => ({
       ...fld,
-      meta: { touched: false, loading: false },
+      meta: { touched: false, loading: false, errors: [] },
     })),
   );
 
@@ -127,12 +127,11 @@ export function Form({
     onChange,
     onBlur,
     onFocus,
-    clearValues, // deprecated!
     reset: clearValues,
     touched: findTouched(),
   };
 
-  const stateWithControls = state.map(field => ({
+  const fieldsWithHandlers = state.map(field => ({
     ...field,
     onBlur,
     onFocus,
@@ -141,17 +140,17 @@ export function Form({
 
   const ui =
     typeof children === 'function'
-      ? children({ fields: stateWithControls, ...fns })
+      ? children({ fields: fieldsWithHandlers, ...fns })
       : children;
 
   return React.useMemo(() => {
     return (
-      <FrmContext.Provider value={{ fields: stateWithControls, ...fns }}>
+      <FrmContext.Provider value={{ fields: fieldsWithHandlers, ...fns }}>
         {ui}
       </FrmContext.Provider>
     );
     // todo: some optimization
-  }, [stateWithControls]);
+  }, [fieldsWithHandlers]);
 }
 
 export function useFormContext() {
@@ -167,21 +166,22 @@ export function useFormContext() {
 /**
  * Useful when rendering fields from a map. Works with and without context.
  */
-export const FieldContainer = React.memo(
-  // remove unused props from the dom
-  ({ children, render, requirements, ...props }: IField) => {
-    const { onChange, onBlur, onFocus } = useFormContext();
-    const passProps = { onChange, onBlur, onFocus, ...props };
+export const MemoField = React.memo(
+  ({ children, render, field }: any) => {
     if (children && render) {
       throw Error('children and render cannot be used together!');
     }
-    if (render) return render(passProps);
-    return children(passProps);
+
+    const { requirements, ...fieldProps } = field;
+
+    if (render) return render(fieldProps);
+    return children(fieldProps);
   },
-  (
-    { value: prevValue, errors: prevErrors = [] },
-    { value: nextValue, errors: nextErrors = [] },
-  ) => isEqual([prevValue, prevErrors], [nextValue, nextErrors]),
+  ({ field: prevField }, { field: nextField }) =>
+    isEqual(
+      [prevField.value, prevField.meta],
+      [nextField.value, nextField.meta],
+    ),
 );
 
 /**

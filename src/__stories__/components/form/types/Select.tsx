@@ -1,10 +1,6 @@
 import * as React from 'react';
 import { Select as AntSelect } from 'antd';
-import {
-  FieldErrors,
-  FormLabel,
-  StyledLabel,
-} from '../../components/formElements';
+import { FieldErrors, FormLabel, StyledLabel } from '../../formElements';
 
 export function Select({ label, meta, showError = true, ...field }) {
   const innerEvent = value =>
@@ -28,7 +24,7 @@ export function Select({ label, meta, showError = true, ...field }) {
           </AntSelect.Option>
         ))}
       </AntSelect>
-      <FieldErrors errors={field.errors} />
+      <FieldErrors errors={meta && meta.errors} />
     </StyledLabel>
   );
 }

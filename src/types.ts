@@ -3,10 +3,10 @@ export interface IField {
   value: any;
   type: string;
   meta: {
-    touched?: boolean;
-    loading?: boolean;
+    touched: boolean;
+    loading: boolean;
+    errors: unknown[];
   };
-  errors?: any[];
   label?: string;
   placeholder?: string;
   requirements?: Function[];

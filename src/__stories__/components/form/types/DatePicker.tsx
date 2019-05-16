@@ -1,10 +1,6 @@
 import * as React from 'react';
 import { DatePicker as AntDatePicker } from 'antd';
-import {
-  FieldErrors,
-  FormLabel,
-  StyledLabel,
-} from '../../components/formElements';
+import { FieldErrors, FormLabel, StyledLabel } from '../../formElements';
 
 export function DatePicker({ label, meta, showError = true, ...field }) {
   return (
@@ -13,7 +9,7 @@ export function DatePicker({ label, meta, showError = true, ...field }) {
       <AntDatePicker
         onChange={date => field.onChange({ name: field.name, value: date })}
       />
-      <FieldErrors errors={field.errors} />
+      <FieldErrors errors={meta && meta.errors} />
     </StyledLabel>
   );
 }
