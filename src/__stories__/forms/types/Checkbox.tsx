@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Checkbox as AntCheckbox } from 'antd';
 import {
-  ErrorMessage,
+  FieldErrors,
   FormLabel,
   StyledLabel,
 } from '../../components/formElements';
@@ -19,9 +19,7 @@ export function Checkbox({ label, meta, showError = true, ...field }) {
       >
         {field.label}
       </AntCheckbox>
-      {meta && meta.touched && meta.error && showError && (
-        <ErrorMessage>{meta.error}</ErrorMessage>
-      )}
+      <FieldErrors errors={field.errors} />
     </StyledLabel>
   );
 }

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Select as AntSelect } from 'antd';
 import {
-  ErrorMessage,
+  FieldErrors,
   FormLabel,
   StyledLabel,
 } from '../../components/formElements';
@@ -28,9 +28,7 @@ export function Select({ label, meta, showError = true, ...field }) {
           </AntSelect.Option>
         ))}
       </AntSelect>
-      {meta && meta.touched && meta.error && showError && (
-        <ErrorMessage>{meta.error}</ErrorMessage>
-      )}
+      <FieldErrors errors={field.errors} />
     </StyledLabel>
   );
 }

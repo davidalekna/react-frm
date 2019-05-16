@@ -14,7 +14,7 @@ const Demo = () => {
   return (
     <Wrapper>
       <Form initialFields={initialFields} onSubmit={onSubmit}>
-        {({ fields, handleSubmit, reset }) => {
+        {({ fields, handleSubmit, reset, touched }) => {
           return (
             <form onSubmit={evt => handleSubmit(evt)}>
               <fieldset>
@@ -22,8 +22,9 @@ const Demo = () => {
                 {renderFields({ fields })}
                 <br />
                 <div>
-                  {/* disabled={!touched} */}
-                  <button type="submit">Submit</button>
+                  <button type="submit" disabled={!touched}>
+                    Submit
+                  </button>
                   <button type="button" onClick={() => reset()}>
                     reset
                   </button>
