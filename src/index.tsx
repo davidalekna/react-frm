@@ -132,19 +132,26 @@ export function Form({
     touched: findTouched(),
   };
 
+  const stateWithControls = state.map(field => ({
+    ...field,
+    onBlur,
+    onFocus,
+    onChange,
+  }));
+
   const ui =
     typeof children === 'function'
-      ? children({ fields: state, ...fns })
+      ? children({ fields: stateWithControls, ...fns })
       : children;
 
   return React.useMemo(() => {
     return (
-      <FrmContext.Provider value={{ fields: state, ...fns }}>
+      <FrmContext.Provider value={{ fields: stateWithControls, ...fns }}>
         {ui}
       </FrmContext.Provider>
     );
     // todo: some optimization
-  }, [state]);
+  }, [stateWithControls]);
 }
 
 export function useFormContext() {
