@@ -5,7 +5,7 @@ import useObservable from './useObservable';
 import {
   fieldUpdate,
   fieldBlur,
-  fieldTouched,
+  fieldFocus,
   formReset,
   formSubmit,
 } from './store/actions';
@@ -15,31 +15,46 @@ import {
   InputEvent,
   ICustomInput,
   IDefaultProps,
-  IFrmContext,
+  IFormContext,
 } from './types';
 
-const FrmContext = React.createContext<IFrmContext>({
+export const FormContext = React.createContext<IFormContext>({
   fields: [],
   handleSubmit: () => {},
-  onChange: () => {},
-  onBlur: () => {},
-  clearValues: () => {},
-  addFields: () => {},
+  reset: () => {},
+  touched: false,
 });
+
+function transformFields(initialFields: FormState) {
+  const meta = { touched: false, loading: false, errors: [] };
+  return cloneDeep(
+    initialFields.map(({ requirements, ...field }: IField) => {
+      if (
+        Array.isArray(requirements) &&
+        requirements.filter(fn => typeof fn === 'function').filter(Boolean)
+          .length > 0
+      ) {
+        return {
+          ...field,
+          requirements,
+          meta,
+        };
+      }
+
+      return {
+        ...field,
+        meta,
+      };
+    }),
+  );
+}
 
 export function Form({
   children,
   initialFields = [],
   onSubmit = () => {},
 }: IDefaultProps) {
-  const initialValue: FormState = cloneDeep(
-    initialFields.map((fld: IField) => ({
-      ...fld,
-      meta: { touched: false, loading: false, errors: [] },
-    })),
-  );
-
-  const { state, dispatch } = useObservable(cloneDeep(initialValue));
+  const { state, dispatch } = useObservable(transformFields(initialFields));
 
   const onChangeTarget = ({ target }: InputEvent) => {
     if (!target.name) throw Error('no input name');
@@ -96,11 +111,11 @@ export function Form({
     if ('target' in input) {
       const { target } = input;
       if (!target.name) throw Error('no input name');
-      dispatch(fieldTouched(target.name));
+      dispatch(fieldFocus(target.name));
     } else {
       const { name } = input;
       if (!name) throw Error('no input name');
-      dispatch(fieldTouched(name));
+      dispatch(fieldFocus(name));
     }
   };
 
@@ -124,9 +139,6 @@ export function Form({
 
   const fns = {
     handleSubmit,
-    onChange,
-    onBlur,
-    onFocus,
     reset: clearValues,
     touched: findTouched(),
   };
@@ -143,18 +155,15 @@ export function Form({
       ? children({ fields: fieldsWithHandlers, ...fns })
       : children;
 
-  return React.useMemo(() => {
-    return (
-      <FrmContext.Provider value={{ fields: fieldsWithHandlers, ...fns }}>
-        {ui}
-      </FrmContext.Provider>
-    );
-    // todo: some optimization
-  }, [fieldsWithHandlers]);
+  return (
+    <FormContext.Provider value={{ fields: fieldsWithHandlers, ...fns }}>
+      {ui}
+    </FormContext.Provider>
+  );
 }
 
 export function useFormContext() {
-  const context = React.useContext(FrmContext);
+  const context = React.useContext(FormContext);
   if (!context) {
     throw new Error(
       `Form compound components cannot be rendered outside the Form component`,
@@ -188,19 +197,20 @@ export const MemoField = React.memo(
  * If form has to have some shape, this component will select field by name
  */
 export const Field = ({
+  name,
   children,
   render,
-  name,
 }: {
+  name: string;
   children?: Function;
   render?: Function;
-  name: string;
 }) => {
-  const { fields, onChange, onBlur, onFocus } = useFormContext();
+  const { fields } = useFormContext();
   const field = fields.find((f: IField) => f.name === name);
 
-  if (children && render)
+  if (children && render) {
     throw Error('children and render cannot be used together!');
+  }
   if (!field) {
     const hasMatch = fields.find(f => f.name.includes(name));
     if (hasMatch) {
@@ -217,8 +227,7 @@ export const Field = ({
   return React.useMemo(() => {
     // remove unused props from the dom
     const { requirements, ...fieldProps } = field;
-    const passProps = { onChange, onBlur, onFocus, ...fieldProps };
-    if (render) return render(passProps);
-    if (children) return children(passProps);
+    if (render) return render(fieldProps);
+    if (children) return children(fieldProps);
   }, [field.value, field.errors]);
 };

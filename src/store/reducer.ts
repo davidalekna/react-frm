@@ -6,7 +6,7 @@ import {
   FIELD_BLUR,
   FIELD_ERROR_UPDATE,
   ERROR,
-  TOUCHED,
+  FIELD_FOCUS,
   ERRORS,
   FORM_RESET,
   FORM_SUBMIT,
@@ -51,7 +51,7 @@ const formReducer = (initialState: FormState) => (
       state[index] = item;
       return cloneDeep(state);
     }
-    case TOUCHED: {
+    case FIELD_FOCUS: {
       const { name, loading } = action.payload;
       const { item, index } = findByName(name);
       state[index] = merge(item, {

@@ -1,7 +1,12 @@
 import * as React from 'react';
 import { Input } from 'antd';
 import { MemoField } from '../../../../index';
-import { FieldErrors, FormLabel, StyledLabel } from '../../formElements';
+import {
+  FieldErrors,
+  FormLabel,
+  StyledLabel,
+  FieldLoader,
+} from '../../formElements';
 
 export function Text(field) {
   return (
@@ -10,7 +15,8 @@ export function Text(field) {
         return (
           <StyledLabel>
             {label && <FormLabel>{label}</FormLabel>}
-            <Input disabled={meta.loading} type={type} {...field} />
+            {meta.loading && <FieldLoader />}
+            <Input type={type} {...field} />
             <FieldErrors errors={meta && meta.errors} />
           </StyledLabel>
         );

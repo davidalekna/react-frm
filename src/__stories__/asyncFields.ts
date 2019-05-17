@@ -42,7 +42,7 @@ export default [
     placeholder: 'Trump',
     name: 'lastName',
     type: 'text',
-    requirements: [mustContainLetter('a')],
+    requirements: [false, 'jaksbdkjsa', undefined, null, 12344],
   },
   {
     label: 'Date of Birth',

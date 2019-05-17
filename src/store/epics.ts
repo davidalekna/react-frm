@@ -26,17 +26,22 @@ const fieldValidator = (action$: Observable<FormActions>) => {
   return switchMap(({ payload }) => {
     // add requests into an Observable from
     const requests = payload.item.requirements
+      // only function allowed in requests
+      .filter(fn => typeof fn === 'function')
+      // make each one an observable
       .map(fn => from(Promise.resolve(fn(payload.item.value))))
+      // filter falsy values
       .filter(Boolean);
 
-    // error$ stream generates errors over time and applies to field errors
+    // error$ stream generator generates errors over
+    // time and applies to field errors
     return of(...requests).pipe(
       mergeAll(),
       scan((allResponses: any, currentResponse) => {
         return [...allResponses, currentResponse];
       }, []),
-      mergeMap(errors =>
-        of(
+      mergeMap(errors => {
+        return of(
           fieldErrorUpdate({
             ...payload,
             item: {
@@ -48,8 +53,8 @@ const fieldValidator = (action$: Observable<FormActions>) => {
               },
             },
           }),
-        ),
-      ),
+        );
+      }),
       takeUntil(
         merge(
           action$.pipe(ofType(FORM_RESET)),

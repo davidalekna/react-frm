@@ -28,12 +28,13 @@ export interface IFinalValues {
 
 export interface IDefaultProps {
   children: Function | unknown;
-  initialFields?: any[];
-  validate?: Function;
-  onSubmit?: Function;
+  initialFields: any[];
+  onSubmit: Function;
 }
 
-export interface IFrmContext {
+export interface IFormContext {
   fields: FormState;
-  [key: string]: any;
+  handleSubmit: Function;
+  reset: Function;
+  touched: Boolean;
 }
