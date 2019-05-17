@@ -53,8 +53,12 @@ export function Form({
   children,
   initialFields = [],
   onSubmit = () => {},
+  epics = [],
 }: IDefaultProps) {
-  const { state, dispatch } = useObservable(transformFields(initialFields));
+  const { state, dispatch } = useObservable(
+    transformFields(initialFields),
+    epics,
+  );
 
   const onChangeTarget = ({ target }: InputEvent) => {
     if (!target.name) throw Error('no input name');

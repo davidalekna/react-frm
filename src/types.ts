@@ -30,6 +30,7 @@ export interface IDefaultProps {
   children: Function | unknown;
   initialFields: any[];
   onSubmit: Function;
+  epics?: Function[];
 }
 
 export interface IFormContext {
