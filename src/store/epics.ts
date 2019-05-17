@@ -10,8 +10,8 @@ import {
   scan,
   map,
   takeUntil,
-  debounceTime,
   tap,
+  throttleTime,
 } from 'rxjs/operators';
 import { FormActions } from './types';
 import { FormState, IField } from '../types';
@@ -89,7 +89,7 @@ export function onBlurEpic(action$: Observable<FormActions>) {
 export function onSubmitEpic(action$) {
   return action$.pipe(
     ofType(FORM_SUBMIT),
-    debounceTime(250),
+    throttleTime(1500),
     switchMap(
       ({ payload, onSubmit }: { payload: FormState; onSubmit: Function }) => {
         const errorsBuffer: IField[] = [];
