@@ -143,7 +143,7 @@ export function Form({
     touched: findTouched(),
   };
 
-  const fieldsWithHandlers = state.map(field => ({
+  const fieldsWithHandlers = state.map(({ requirements, ...field }) => ({
     ...field,
     onBlur,
     onFocus,
@@ -229,5 +229,10 @@ export const Field = ({
     const { requirements, ...fieldProps } = field;
     if (render) return render(fieldProps);
     if (children) return children(fieldProps);
-  }, [field.value, field.errors]);
+  }, [
+    field.value,
+    field.meta.touched,
+    field.meta.loading,
+    field.meta.errors.length,
+  ]);
 };

@@ -1,9 +1,7 @@
 import React from 'react';
 import styled, { keyframes } from 'styled-components';
 
-export const StyledLabel = styled.label`
-  position: relative;
-`;
+export const StyledLabel = styled.label``;
 
 export const FormLabel = styled.div`
   font-weight: 400;
@@ -52,19 +50,23 @@ const Spinner = styled.span`
   }
 `;
 
-export const FieldLoader = props => {
+export const FieldLoader = ({ children, loading }) => {
   return (
-    <Spinner
-      size={16}
-      {...props}
-      style={{
-        position: 'absolute',
-        right: 10,
-        zIndex: 1,
-        top: 0,
-        bottom: 0,
-        margin: 'auto, 0',
-      }}
-    />
+    <div style={{ position: 'relative' }}>
+      {loading && (
+        <Spinner
+          size={16}
+          style={{
+            position: 'absolute',
+            right: 10,
+            zIndex: 1,
+            top: 0,
+            bottom: 0,
+            margin: 'auto 0',
+          }}
+        />
+      )}
+      {children}
+    </div>
   );
 };

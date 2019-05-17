@@ -11,12 +11,13 @@ import {
 export function Text(field) {
   return (
     <MemoField field={field}>
-      {({ label, type, meta, showError = true, ...field }) => {
+      {({ label, type, meta, style, ...field }) => {
         return (
-          <StyledLabel>
+          <StyledLabel style={style}>
             {label && <FormLabel>{label}</FormLabel>}
-            {meta.loading && <FieldLoader />}
-            <Input type={type} {...field} />
+            <FieldLoader loading={meta.loading}>
+              <Input type={type} {...field} />
+            </FieldLoader>
             <FieldErrors errors={meta && meta.errors} />
           </StyledLabel>
         );

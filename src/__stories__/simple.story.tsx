@@ -2,8 +2,8 @@ import * as React from 'react';
 import { storiesOf } from '@storybook/react';
 import { Form } from '../index';
 import ShowDocs from '../__utils__/ShowDocs';
-import initialFields from './asyncFields';
 import { renderFields } from './components/form/renderFields';
+import initialFields from './fields';
 
 const Demo = () => {
   const onSubmit = values => {
