@@ -70,7 +70,7 @@ const fieldValidator = (action$: Observable<FormActions>) => {
   });
 };
 
-export function fieldBlurEpic(action$: Observable<FormActions>) {
+export function onBlurEpic(action$: Observable<FormActions>) {
   return action$.pipe(
     ofType(FIELD_BLUR),
     mergeMap((action: any) => {
@@ -86,7 +86,7 @@ export function fieldBlurEpic(action$: Observable<FormActions>) {
   );
 }
 
-export function validateAllFieldsEpic(action$) {
+export function onSubmitEpic(action$) {
   return action$.pipe(
     ofType(FORM_SUBMIT),
     debounceTime(250),
